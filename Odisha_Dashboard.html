@@ -1,0 +1,2316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Odisha · Booking Analytics Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Karla:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  /* ── SkillSphere Academy: light green dashboard palette ── */
+  --ink:           #1a2e1c;
+  --paper:         #f4f7f4;
+  --paper2:        #eaf1ea;
+  --card:          #ffffff;
+  --border:        #ccdece;
+  --border2:       #dceadc;
+
+  /* Primary — forest/olive green */
+  --accent:        #2d6a35;
+  --accent-mid:    #3d8b48;
+  --accent-dark:   #1f4d26;
+  --accent-light:  #e8f5e9;
+  --accent-glow:   rgba(45,106,53,0.12);
+
+  /* Secondary — vivid fresh green */
+  --accent2:       #43a851;
+  --accent2-light: #edf7ee;
+
+  /* Tertiary — warm amber/gold */
+  --accent3:       #d4860a;
+  --accent3-light: #fff3e0;
+
+  /* Quaternary — soft rose */
+  --amber:         #c0392b;
+  --amber-light:   #fdecea;
+
+  /* Text */
+  --text:          #1a2e1c;
+  --text2:         #4a6b4e;
+  --text3:         #7a9b7e;
+
+  /* Shadows */
+  --shadow:        0 2px 10px rgba(45,106,53,0.08);
+  --shadow-lg:     0 8px 30px rgba(45,106,53,0.14);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Karla',sans-serif; background:#f4f7f4; color:var(--text); min-height:100vh; background-image: radial-gradient(ellipse at 10% 0%, rgba(45,106,53,0.07) 0%, transparent 50%), radial-gradient(ellipse at 90% 100%, rgba(67,168,81,0.05) 0%, transparent 50%); }
+
+.header { background:linear-gradient(135deg,#1a2e1c 0%,#243d26 100%); padding:0 40px; display:flex; align-items:stretch; justify-content:space-between; border-bottom:3px solid var(--accent-mid); position:sticky; top:0; z-index:100; box-shadow:0 2px 16px rgba(45,106,53,0.2); }
+.header-brand { display:flex; flex-direction:column; justify-content:center; padding:18px 0; gap:2px; }
+.header-eyebrow { font-family:'Karla',sans-serif; font-size:10px; font-weight:700; letter-spacing:3px; text-transform:uppercase; color:var(--accent); }
+.header-title { font-family:'Bebas Neue',sans-serif; font-size:32px; letter-spacing:2px; color:#d4edda; line-height:1; }
+.header-sub { font-size:11px; color:#5a8060; letter-spacing:0.5px; }
+.header-meta { display:flex; align-items:center; gap:32px; padding:16px 0; border-left:1px solid #2d4a2f; padding-left:32px; }
+.header-kpi { text-align:right; }
+.header-kpi-val { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:1px; line-height:1; }
+.hkv-orange { color:#7ed88a; text-shadow:0 0 10px rgba(126,216,138,0.4); }
+.hkv-blue { color:#a5d6a7; }
+.hkv-green { color:#c8e6c9; }
+.header-kpi-lbl { font-size:9px; font-weight:600; letter-spacing:2px; text-transform:uppercase; color:#5a8060; margin-top:2px; }
+
+.nav { background:linear-gradient(135deg,#1a2e1c 0%,#243d26 100%); display:flex; padding:0 40px; border-bottom:1px solid #2d4a2f; }
+.nav-tab { padding:12px 20px; font-size:11px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:#4a7a50; cursor:pointer; border-bottom:2px solid transparent; transition:all 0.2s; background:none; border-top:none; border-left:none; border-right:none; white-space:nowrap; }
+.nav-tab:hover { color:#a5d6a7; }
+.nav-tab.active { color:#7ed88a; border-bottom-color:#7ed88a; }
+
+.main { padding:32px 40px 60px; max-width:1440px; margin:0 auto; }
+.page { display:none; }
+.page.active { display:block; animation:fadeUp 0.3s ease; }
+@keyframes fadeUp { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+
+.section-label { display:flex; align-items:center; gap:12px; margin-bottom:16px; margin-top:32px; }
+.section-label:first-child { margin-top:0; }
+.sl-text { font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:2px; color:var(--text2); }
+.sl-line { flex:1; height:1px; background:linear-gradient(90deg,#c8dec8,transparent); }
+
+.kpi-row { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+@media(max-width:1100px){.kpi-row{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:600px){.kpi-row{grid-template-columns:1fr;}}
+.kpi { background:linear-gradient(160deg,#ffffff 0%,#f6fbf6 100%); border:1px solid #dceadc; padding:20px 22px; box-shadow:var(--shadow); position:relative; overflow:hidden; transition:box-shadow 0.2s,transform 0.2s; }
+.kpi:hover { box-shadow:0 8px 24px rgba(45,106,53,0.14), 0 0 0 1px rgba(45,106,53,0.08); transform:translateY(-2px); }
+.kpi::after { content:''; position:absolute; bottom:0; left:0; right:0; height:3px; }
+.kpi.red::after { background:var(--accent); }
+.kpi.blue::after { background:var(--accent2); }
+.kpi.green::after { background:var(--accent3); }
+.kpi.amber::after { background:var(--amber); }
+.kpi-label { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--text3); margin-bottom:10px; }
+.kpi-value { font-family:'Bebas Neue',sans-serif; font-size:38px; letter-spacing:1px; line-height:1; margin-bottom:6px; }
+.kpi.red .kpi-value { color:var(--accent); }
+.kpi.blue .kpi-value { color:var(--accent2); }
+.kpi.green .kpi-value { color:var(--accent3); }
+.kpi.amber .kpi-value { color:var(--amber); }
+.kpi-sub { font-size:12px; color:var(--text3); }
+
+.chart-grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:20px; margin-bottom:24px; }
+.chart-grid-3-1 { display:grid; grid-template-columns:3fr 1fr; gap:20px; margin-bottom:24px; }
+@media(max-width:1000px){.chart-grid-2,.chart-grid-3-1{grid-template-columns:1fr;}}
+.chart-card { background:linear-gradient(160deg,#ffffff 0%,#f6fbf6 100%); border:1px solid #dceadc; box-shadow:var(--shadow); padding:22px; margin-bottom:0; }
+.cc-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:18px; }
+.cc-title { font-family:'Bebas Neue',sans-serif; font-size:16px; letter-spacing:1.5px; color:var(--text); margin-bottom:2px; }
+.cc-sub { font-size:10px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--text3); }
+.cc-pill { font-size:9px; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:4px 10px; border:1px solid var(--border); color:var(--text3); background:var(--paper2); white-space:nowrap; align-self:flex-start; }
+
+.filter-bar { display:flex; align-items:center; gap:12px; padding:14px 18px; background:#ffffff; border:1px solid #dceadc; margin-bottom:20px; flex-wrap:wrap; box-shadow:var(--shadow); }
+.fb-label { font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--text3); }
+.fb-select,.fb-input { font-family:'Karla',sans-serif; font-size:12px; font-weight:500; background:#f0f7f0; border:1px solid #c8dec8; color:var(--text); padding:7px 12px; outline:none; cursor:pointer; transition:border-color 0.2s, box-shadow 0.2s; min-width:150px; }
+.fb-select:focus,.fb-input:focus { border-color:var(--accent); box-shadow:0 0 0 3px rgba(45,106,53,0.12); outline:none; }
+.fb-btn { font-family:'Karla',sans-serif; font-size:11px; font-weight:700; letter-spacing:1px; text-transform:uppercase; padding:8px 18px; cursor:pointer; transition:all 0.2s; border:none; }
+.fb-btn.primary { background:var(--accent); color:#fff; }
+.fb-btn.secondary { background:#eaf1ea; border:1px solid #c8dec8; color:var(--text2); }
+.fb-btn.secondary:hover { border-color:var(--accent); color:var(--accent); }
+
+.table-wrap { background:#ffffff; border:1px solid #dceadc; box-shadow:var(--shadow); overflow-x:auto; margin-bottom:24px; }
+table { width:100%; border-collapse:collapse; font-size:13px; }
+thead tr { background:#eaf1ea; border-bottom:2px solid var(--border); }
+th { padding:13px 16px; text-align:left; font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--text3); cursor:pointer; user-select:none; white-space:nowrap; transition:color 0.15s; }
+th:hover { color:var(--accent); }
+tbody tr { border-bottom:1px solid var(--border2); transition:background 0.12s; }
+tbody tr:hover { background:#edf6ed; }
+tbody tr:last-child { border-bottom:none; }
+td { padding:12px 16px; color:var(--text2); }
+td.td-primary { color:var(--text); font-weight:600; }
+td.td-num { font-weight:600; color:var(--text); font-variant-numeric:tabular-nums; }
+
+.rank-num { display:inline-flex; width:24px; height:24px; align-items:center; justify-content:center; font-size:10px; font-weight:700; border-radius:50%; }
+.rn-1 { background:#fff8e1; color:#b45309; border:1px solid #fcd34d; }
+.rn-2 { background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; }
+.rn-3 { background:#fce8e8; color:#9a3412; border:1px solid #f4a3a3; }
+.rn-x { background:var(--paper2); color:var(--text3); border:1px solid var(--border); }
+.bar-inline { display:flex; align-items:center; gap:8px; }
+.bar-track { flex:1; max-width:70px; height:4px; background:var(--border2); border-radius:2px; overflow:hidden; }
+.bar-fill { height:100%; border-radius:2px; }
+.tag { display:inline-block; font-size:10px; font-weight:700; padding:2px 8px; border-radius:2px; letter-spacing:0.5px; }
+.tag-high { background:#e8f5e9; color:#2d6a35; }
+.tag-med  { background:#e3f2fd; color:#1565c0; }
+.tag-low  { background:#fff8e1; color:#c77700; }
+.tag-zero { background:#eaf1ea; color:var(--text3); }
+.tag-neg  { background:#ffebee; color:#c62828; }
+
+.district-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px; }
+@media(max-width:900px){.district-grid{grid-template-columns:repeat(2,1fr);}}
+.d-card { background:linear-gradient(160deg,#ffffff 0%,#f6fbf6 100%); border:1px solid #dceadc; padding:20px; box-shadow:var(--shadow); border-top:3px solid var(--border); transition:all 0.2s; }
+.d-card:hover { box-shadow:0 8px 24px rgba(45,106,53,0.12), 0 0 0 1px rgba(45,106,53,0.06); transform:translateY(-2px); }
+.d-card.d-imphal { border-top-color:var(--accent); }
+.d-card.d-chura  { border-top-color:var(--accent2); }
+.d-card.d-thoubal{ border-top-color:var(--accent3); }
+.d-name { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:1px; margin-bottom:14px; }
+.d-stat { display:flex; justify-content:space-between; align-items:center; padding:5px 0; border-bottom:1px solid var(--border2); }
+.d-stat:last-of-type { border-bottom:none; }
+.d-stat-key { font-size:10px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--text3); }
+.d-stat-val { font-size:13px; font-weight:700; color:var(--text); }
+.d-share-bar { height:6px; background:var(--border2); border-radius:3px; margin-top:14px; overflow:hidden; }
+.d-share-fill { height:100%; border-radius:3px; }
+.d-imphal .d-share-fill { background:var(--accent); }
+.d-chura  .d-share-fill { background:var(--accent2); }
+.d-thoubal .d-share-fill { background:var(--accent3); }
+
+.vl-filter-bar { display:flex; align-items:center; gap:8px; flex-wrap:wrap; margin-bottom:14px; }
+.vl-pill {
+  display:flex; align-items:center; gap:7px;
+  padding:6px 14px 6px 10px; border:1px solid var(--border2);
+  background:transparent; cursor:pointer; transition:all 0.18s;
+  font-family:'Karla',sans-serif; font-size:12px; font-weight:700;
+  letter-spacing:0.5px; color:var(--text2);
+}
+.vl-pill:hover { border-color:var(--border); color:var(--text); }
+.vl-pill.active { background:var(--paper2); border-color:var(--border); color:var(--text); }
+.vl-pill-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+.vl-pill-count {
+  font-size:10px; font-weight:700; padding:1px 6px;
+  background:var(--paper2); color:var(--text3); border-radius:10px;
+  transition:background 0.18s;
+}
+.vl-pill.active .vl-pill-count { background:var(--accent); color:#fff; }
+.vl-venue-grid {
+  display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));
+  gap:10px;
+}
+.vl-venue-card {
+  display:flex; align-items:center; gap:10px;
+  padding:10px 14px; border:1px solid var(--border2);
+  background:var(--paper); transition:border-color 0.15s, background 0.15s;
+}
+.vl-venue-card:hover { border-color:var(--border); background:var(--paper2); }
+.vl-venue-num {
+  font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:1px;
+  color:var(--text3); flex-shrink:0; min-width:22px; line-height:1;
+}
+.vl-venue-name { font-size:12px; font-weight:600; color:var(--text); line-height:1.3; }
+.vl-empty {
+  font-size:12px; color:var(--text3); font-style:italic;
+  padding:20px 0; text-align:center;
+}
+
+.insight-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px; }
+@media(max-width:900px){.insight-grid{grid-template-columns:1fr;}}
+.insight { background:linear-gradient(160deg,#ffffff 0%,#f6fbf6 100%); border:1px solid #dceadc; padding:20px; box-shadow:var(--shadow); border-left:4px solid var(--border); }
+.insight.red   { border-left-color:var(--accent); }
+.insight.blue  { border-left-color:var(--accent2); }
+.insight.green { border-left-color:var(--accent3); }
+.insight.amber { border-left-color:var(--amber); }
+.insight-val { font-family:'Bebas Neue',sans-serif; font-size:28px; letter-spacing:1px; margin-bottom:4px; }
+.insight.red  .insight-val { color:var(--accent); }
+.insight.blue .insight-val { color:var(--accent2); }
+.insight.green .insight-val { color:var(--accent3); }
+.insight.amber .insight-val { color:var(--amber); }
+.insight-title { font-size:13px; font-weight:700; margin-bottom:6px; }
+.insight-body { font-size:12px; color:var(--text2); line-height:1.6; }
+
+/* ── MONTHLY INTERACTIVE STAT STRIP ── */
+.mn-combo-card { position:relative; }
+.mn-stat-strip {
+  display:flex; align-items:center; gap:0;
+  background:#eaf1ea; border:1px solid #dceadc;
+  margin-bottom:14px; padding:0; overflow:hidden;
+  transition:border-color 0.2s;
+}
+.mn-stat-strip:hover { border-color:var(--border); }
+.mn-stat-item {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:10px 18px; gap:3px; flex:1;
+}
+.mn-stat-val {
+  font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:1px;
+  color:var(--text); line-height:1; transition:color 0.2s;
+}
+.mn-stat-lbl {
+  font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+  color:var(--text3);
+}
+.mn-stat-idle { background:rgba(200,65,10,0.04); }
+.mn-stat-divider { width:1px; height:40px; background:var(--border2); flex-shrink:0; }
+.mn-col-bookings { color:var(--accent) !important; }
+.mn-col-revenue  { color:var(--accent2) !important; }
+.mn-stat-hint {
+  font-size:10px; font-weight:600; letter-spacing:1px; color:var(--text3);
+  padding:0 16px; white-space:nowrap; flex-shrink:0; font-style:italic;
+  transition:opacity 0.3s;
+}
+.mn-stat-hint.hidden { opacity:0; pointer-events:none; }
+.vc-panel {
+  background:#eaf1ea; border:1px solid #dceadc;
+  margin-bottom:14px; padding:10px 14px 8px; overflow-x:auto;
+}
+.vc-panel-title {
+  font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+  color:var(--text3); margin-bottom:8px;
+}
+.vc-grid { display:grid; gap:0; }
+.vc-grid-row {
+  display:grid; grid-template-columns: 130px repeat(12, 1fr);
+  border-bottom:1px solid rgba(180,210,180,0.4);
+}
+.vc-grid-row:last-child { border-bottom:none; }
+.vc-grid-row.header-row { background:rgba(180,210,180,0.18); }
+.vc-cell {
+  padding:5px 4px; text-align:center;
+  font-family:'Bebas Neue',sans-serif; font-size:14px; letter-spacing:0.5px;
+  color:var(--text2); line-height:1;
+}
+.vc-cell.district-cell {
+  text-align:left; font-family:'Karla',sans-serif;
+  font-size:10px; font-weight:700; letter-spacing:1px; text-transform:uppercase;
+  color:var(--text); display:flex; align-items:center; gap:6px; padding-left:6px;
+}
+.vc-cell.header-cell {
+  font-family:'Karla',sans-serif; font-size:9px; font-weight:700;
+  letter-spacing:1px; text-transform:uppercase; color:var(--text3); padding:4px 2px;
+}
+.vc-cell.zero { color:var(--text3); opacity:0.4; }
+.vc-dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+.vc-total-row { background:rgba(180,210,180,0.1); }
+.vc-total-row .vc-cell { font-family:'Karla',sans-serif; font-size:10px; font-weight:700; color:var(--text); }
+.vc-total-row .district-cell { color:var(--text3); letter-spacing:2px; }
+.mn-filter-bar {
+  display:flex; align-items:center; gap:8px; margin-bottom:14px;
+  flex-wrap:wrap;
+}
+.mn-filter-label {
+  font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase;
+  color:var(--text3); margin-right:4px;
+}
+.mn-dpill {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:6px 14px;
+  font-family:'Karla',sans-serif; font-size:11px; font-weight:700;
+  letter-spacing:0.5px; cursor:pointer;
+  background:#ffffff; border:1px solid #c8dec8;
+  color:var(--text2); transition:all 0.18s;
+}
+.mn-dpill:hover { border-color:var(--accent); color:var(--accent); }
+.mn-dpill.active {
+  background:linear-gradient(135deg,var(--accent) 0%,var(--accent-dark) 100%); border-color:var(--accent); color:#ffffff; box-shadow:0 2px 8px rgba(45,106,53,0.25);
+}
+.mn-dpill-dot {
+  width:8px; height:8px; border-radius:50%; display:inline-block; flex-shrink:0;
+}
+
+/* 6-col KPI row */
+.ov-kpi-row { display:grid; grid-template-columns:repeat(6,1fr); gap:12px; margin-bottom:0; }
+@media(max-width:1200px){.ov-kpi-row{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:700px){.ov-kpi-row{grid-template-columns:repeat(2,1fr);}}
+
+.ov-kpi { background:linear-gradient(160deg,#ffffff 0%,#f6fbf6 100%); border:1px solid #dceadc; padding:16px; box-shadow:var(--shadow); display:flex; align-items:center; gap:12px; position:relative; overflow:hidden; transition:transform 0.2s,box-shadow 0.2s; border-bottom:3px solid transparent; }
+.ov-kpi:hover { transform:translateY(-2px); box-shadow:0 8px 24px rgba(45,106,53,0.14), 0 0 0 1px rgba(45,106,53,0.08); }
+.ov-kpi.ov-red   { border-bottom-color:var(--accent); }
+.ov-kpi.ov-blue  { border-bottom-color:var(--accent2); }
+.ov-kpi.ov-green { border-bottom-color:var(--accent3); }
+.ov-kpi.ov-amber { border-bottom-color:var(--amber); }
+
+.ov-kpi-icon { font-size:22px; flex-shrink:0; opacity:0.85; }
+.ov-kpi-body { min-width:0; }
+.ov-kpi-label { font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--text3); margin-bottom:4px; }
+.ov-kpi-value { font-family:'Bebas Neue',sans-serif; font-size:26px; letter-spacing:1px; line-height:1; margin-bottom:3px; }
+.ov-kpi.ov-red  .ov-kpi-value { color:var(--accent); }
+.ov-kpi.ov-blue .ov-kpi-value { color:var(--accent2); }
+.ov-kpi.ov-green .ov-kpi-value { color:var(--accent3); }
+.ov-kpi.ov-amber .ov-kpi-value { color:var(--amber); }
+.ov-kpi-sub { font-size:10px; color:var(--text3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+
+/* Quarter performance band */
+.ov-quarter-band { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:24px; }
+@media(max-width:900px){.ov-quarter-band{grid-template-columns:repeat(2,1fr);}}
+
+.ov-qcard { background:linear-gradient(160deg,#ffffff 0%,#f6fbf6 100%); border:1px solid #dceadc; border-top:3px solid; padding:16px 18px; box-shadow:var(--shadow); }
+.ov-qcard-head { font-family:'Bebas Neue',sans-serif; font-size:20px; letter-spacing:1.5px; margin-bottom:12px; display:flex; align-items:baseline; gap:8px; }
+.ov-qcard-head span { font-family:'Karla',sans-serif; font-size:10px; font-weight:600; letter-spacing:1px; color:var(--text3); }
+.ov-qcard-metric { display:flex; justify-content:space-between; align-items:baseline; padding:4px 0; border-bottom:1px solid var(--border2); }
+.ov-qcard-metric:last-of-type { border-bottom:none; }
+.ov-qm-val { font-size:16px; font-weight:700; color:var(--text); font-variant-numeric:tabular-nums; }
+.ov-qm-lbl { font-size:9px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--text3); }
+.ov-qbar-track { height:5px; background:var(--border2); border-radius:3px; margin-top:12px; overflow:hidden; }
+.ov-qbar-fill { height:100%; border-radius:3px; }
+.ov-qshare { font-size:10px; font-weight:700; letter-spacing:1px; margin-top:6px; }
+
+/* Row 3 — trend + donut + district strip */
+.ov-row3 { display:grid; grid-template-columns:1.6fr 1fr 1.2fr; gap:16px; margin-bottom:20px; align-items:start; }
+@media(max-width:1100px){.ov-row3{grid-template-columns:1fr 1fr;}}
+@media(max-width:700px){.ov-row3{grid-template-columns:1fr;}}
+
+.ov-trend-card { }
+.ov-donut-card { }
+
+.ov-dist-strip { background:linear-gradient(160deg,#ffffff 0%,#f6fbf6 100%); border:1px solid #dceadc; padding:18px 20px; box-shadow:var(--shadow); }
+.ov-ds-title { font-size:9px; font-weight:700; letter-spacing:2px; text-transform:uppercase; color:var(--text3); margin-bottom:14px; }
+.ov-ds-row { margin-bottom:12px; }
+.ov-ds-name { font-size:11px; font-weight:700; color:var(--text); margin-bottom:5px; }
+.ov-ds-bar-wrap { height:6px; background:var(--border2); border-radius:3px; overflow:hidden; margin-bottom:4px; }
+.ov-ds-bar { height:100%; border-radius:3px; }
+.ov-ds-vals { display:flex; gap:0; }
+.ov-ds-vals span { font-size:10px; font-weight:600; color:var(--text2); flex:1; text-align:left; }
+.ov-ds-legend { display:flex; gap:0; margin-top:8px; padding-top:8px; border-top:1px solid var(--border2); }
+.ov-ds-legend span { font-size:9px; font-weight:600; letter-spacing:1px; text-transform:uppercase; color:var(--text3); flex:1; }
+
+/* Row 4 — 3 chart cards */
+.ov-row4 { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; margin-bottom:24px; }
+@media(max-width:1000px){.ov-row4{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:600px){.ov-row4{grid-template-columns:1fr;}}
+
+/* Insights row */
+.ov-insight-row { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:8px; }
+@media(max-width:1000px){.ov-insight-row{grid-template-columns:repeat(2,1fr);}}
+@media(max-width:600px){.ov-insight-row{grid-template-columns:1fr;}}
+
+.ov-ins { background:linear-gradient(160deg,#ffffff 0%,#f6fbf6 100%); border:1px solid #dceadc; padding:18px 20px; box-shadow:var(--shadow); position:relative; overflow:hidden; }
+.ov-ins-red   { border-left:4px solid var(--accent); }
+.ov-ins-blue  { border-left:4px solid var(--accent2); }
+.ov-ins-green { border-left:4px solid var(--accent3); }
+.ov-ins-amber { border-left:4px solid var(--amber); }
+
+.ov-ins-num { position:absolute; top:12px; right:14px; font-family:'Bebas Neue',sans-serif; font-size:36px; color:var(--border2); letter-spacing:1px; line-height:1; }
+.ov-ins-val { font-family:'Bebas Neue',sans-serif; font-size:24px; letter-spacing:1px; line-height:1; margin-bottom:4px; }
+.ov-ins-red   .ov-ins-val { color:var(--accent); }
+.ov-ins-blue  .ov-ins-val { color:var(--accent2); }
+.ov-ins-green .ov-ins-val { color:var(--accent3); }
+.ov-ins-amber .ov-ins-val { color:var(--amber); }
+.ov-ins-title { font-size:12px; font-weight:700; margin-bottom:6px; color:var(--text); }
+.ov-ins-body  { font-size:11px; color:var(--text2); line-height:1.6; }
+
+/* Overview year selector buttons */
+.ov-year-btn {
+  font-family:'Karla',sans-serif;
+  font-size:11px;
+  font-weight:700;
+  letter-spacing:1.5px;
+  text-transform:uppercase;
+  padding:7px 16px;
+  cursor:pointer;
+  border:1.5px solid var(--border);
+  background:#fff;
+  color:var(--text3);
+  transition:all 0.18s;
+}
+.ov-year-btn:hover { border-color:var(--accent); color:var(--accent); }
+.ov-year-btn.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+::-webkit-scrollbar { width:4px; height:4px; }
+::-webkit-scrollbar-track { background:#eaf1ea; }
+::-webkit-scrollbar-thumb { background:linear-gradient(180deg,var(--accent-mid),var(--accent-dark)); border-radius:3px; }
+
+/* Ongoing quarter indicator */
+.ov-qcard.ov-qcard--ongoing { box-shadow:0 0 0 2px var(--ongoing-color,#2d6a35), var(--shadow-lg); }
+.ov-q-live-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:9px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase;
+  padding:3px 8px; border-radius:2px; margin-bottom:10px;
+  color:#fff;
+}
+.ov-q-live-dot {
+  width:6px; height:6px; border-radius:50%; background:#fff;
+  animation:ov-pulse 1.4s ease-in-out infinite;
+  flex-shrink:0;
+}
+@keyframes ov-pulse {
+  0%,100%{ opacity:1; transform:scale(1); }
+  50%{ opacity:0.4; transform:scale(0.7); }
+}
+
+/* Quarter pills */
+.qpill {
+  display:inline-flex; align-items:center; gap:6px;
+  padding:6px 14px;
+  font-family:'Karla',sans-serif; font-size:11px; font-weight:700;
+  letter-spacing:0.5px; cursor:pointer;
+  background:#ffffff; border:1px solid #c8dec8;
+  color:var(--text2); transition:all 0.18s;
+  white-space:nowrap;
+}
+.qpill:hover { border-color:var(--accent); color:var(--accent); background:#e8f5e9; }
+.qpill.active { background:linear-gradient(135deg,var(--accent) 0%,var(--accent-dark) 100%); border-color:var(--accent); color:#ffffff; box-shadow:0 2px 10px rgba(45,106,53,0.25); }
+.qpill-label { font-size:12px; font-weight:800; letter-spacing:1px; }
+.qpill-months { font-size:10px; font-weight:500; opacity:0.8; }
+.qpill.active .qpill-months { opacity:0.85; }
+
+/* Quarter KPI strip */
+.qkpi { display:flex; flex-direction:column; align-items:flex-end; padding:6px 14px; background:linear-gradient(160deg,#ffffff 0%,#f6fbf6 100%); border:1px solid #dceadc; }
+.qkpi-val { font-family:'Bebas Neue',sans-serif; font-size:18px; letter-spacing:1px; line-height:1; }
+.qkpi-lbl { font-size:9px; font-weight:600; letter-spacing:1.5px; text-transform:uppercase; color:var(--text3); margin-top:1px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-brand">
+    <div class="header-eyebrow">PlaySpots · Odisha State</div>
+    <div class="header-title">BOOKING ANALYTICS</div>
+    <div class="header-sub" id="header-sub-text">Jan – Mar 2026 &nbsp;·&nbsp; 3 Districts &nbsp;·&nbsp; Q1 Data</div>
+  </div>
+  <div class="header-meta">
+    <div class="header-kpi">
+      <div class="header-kpi-val hkv-orange" id="hkpi-bookings">498</div>
+      <div class="header-kpi-lbl">Total Bookings</div>
+    </div>
+    <div class="header-kpi">
+      <div class="header-kpi-val hkv-blue" id="hkpi-revenue">₹8.75L</div>
+      <div class="header-kpi-lbl">Booking Amount</div>
+    </div>
+    <div class="header-kpi">
+      <div class="header-kpi-val hkv-green" id="hkpi-pkg">162</div>
+      <div class="header-kpi-lbl">Pkg Offered</div>
+    </div>
+  </div>
+</div>
+
+<div class="nav">
+  <button class="nav-tab active" onclick="showPage('overview')">Overview</button>
+  <button class="nav-tab" onclick="showPage('district')">Districts</button>
+  <button class="nav-tab" onclick="showPage('monthly')">Monthly Trends</button>
+  <button class="nav-tab" onclick="showPage('incentive')">Incentives</button>
+  <button class="nav-tab" onclick="showPage('rawdata')">Data Table</button>
+</div>
+
+<div class="main">
+
+<!-- ══════════ OVERVIEW ══════════ -->
+<div class="page active" id="page-overview">
+
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+    <span style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);">Year:</span>
+    <div style="display:flex;gap:6px;">
+    <button class="ov-year-btn" id="ov-yr-2020" onclick="setPageYear('ov','2020')">2020</button>
+    <button class="ov-year-btn" id="ov-yr-2021" onclick="setPageYear('ov','2021')">2021</button>
+    <button class="ov-year-btn" id="ov-yr-2022" onclick="setPageYear('ov','2022')">2022</button>
+    <button class="ov-year-btn" id="ov-yr-2023" onclick="setPageYear('ov','2023')">2023</button>
+    <button class="ov-year-btn" id="ov-yr-2024" onclick="setPageYear('ov','2024')">2024</button>
+    <button class="ov-year-btn" id="ov-yr-2025" onclick="setPageYear('ov','2025')">2025</button>
+    <button class="ov-year-btn active" id="ov-yr-2026" onclick="setPageYear('ov','2026')">2026</button>
+    </div>
+    <span id="ov-year-label" style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-left:4px;">2026 · CURRENT DATA</span>
+  </div>
+
+  <div id="ov-no-data" style="display:none;background:#ffffff;border:1px solid var(--border);box-shadow:var(--shadow);padding:80px 40px;text-align:center;margin-bottom:24px;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:56px;letter-spacing:4px;color:var(--border);line-height:1;" id="ov-no-data-year">2024</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;color:var(--text3);margin:8px 0 12px;">NO DATA AVAILABLE</div>
+    <div style="font-size:13px;color:var(--text3);line-height:1.7;max-width:380px;margin:0 auto;">
+      No booking records found for <strong id="ov-no-data-yr2"></strong>.<br>
+      Available data: <strong>Jan&nbsp;–&nbsp;Dec 2025</strong> &amp; <strong>Jan&nbsp;–&nbsp;Mar 2026</strong>.<br>
+      Select <strong>2025</strong> or <strong>2026</strong> to view the dashboard.
+    </div>
+    <button onclick="setPageYear('ov','2025')"
+      style="margin-top:20px;font-family:'Karla',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:10px 24px;cursor:pointer;background:var(--accent);color:#fff;border:none;">
+      ← View 2025 or 2026 Data
+    </button>
+  </div>
+
+  <div id="ov-content">
+
+  <!-- ROW 1 · 6 KPI TILES -->
+  <div class="ov-kpi-row">
+    <div class="ov-kpi ov-red">
+      <div class="ov-kpi-icon">📋</div>
+      <div class="ov-kpi-body">
+        <div class="ov-kpi-label">Total Bookings</div>
+        <div class="ov-kpi-value">498</div>
+        <div class="ov-kpi-sub">3 districts · Jan–Mar 2026</div>
+      </div>
+    </div>
+    <div class="ov-kpi ov-blue">
+      <div class="ov-kpi-icon">💰</div>
+      <div class="ov-kpi-body">
+        <div class="ov-kpi-label">Booking Amount</div>
+        <div class="ov-kpi-value">₹8.75L</div>
+        <div class="ov-kpi-sub">₹8,75,097 cumulative</div>
+      </div>
+    </div>
+    <div class="ov-kpi ov-green">
+      <div class="ov-kpi-icon">🎁</div>
+      <div class="ov-kpi-body">
+        <div class="ov-kpi-label">Pkg Offered</div>
+        <div class="ov-kpi-value">162</div>
+        <div class="ov-kpi-sub">₹11,650 total pkg offered</div>
+      </div>
+    </div>
+    <div class="ov-kpi ov-amber">
+      <div class="ov-kpi-icon">🪙</div>
+      <div class="ov-kpi-body">
+        <div class="ov-kpi-label">Playcoin Bookings</div>
+        <div class="ov-kpi-value">110</div>
+        <div class="ov-kpi-sub">₹1,819 coins redeemed</div>
+      </div>
+    </div>
+    <div class="ov-kpi ov-red">
+      <div class="ov-kpi-icon">📍</div>
+      <div class="ov-kpi-body">
+        <div class="ov-kpi-label">Avg / Booking</div>
+        <div class="ov-kpi-value">₹1,757</div>
+        <div class="ov-kpi-sub">State-wide average ticket</div>
+      </div>
+    </div>
+    <div class="ov-kpi ov-blue">
+      <div class="ov-kpi-icon">📍</div>
+      <div class="ov-kpi-body">
+        <div class="ov-kpi-label">Districts Active</div>
+        <div class="ov-kpi-value">3</div>
+        <div class="ov-kpi-sub">Districts active in 2025</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 2 · QUARTER PERFORMANCE BAND -->
+  <div class="section-label" style="margin-top:24px;"><span class="sl-text">Quarterly Performance</span><span class="sl-line"></span></div>
+  <div class="ov-quarter-band">
+    <div class="ov-qcard" style="border-top-color:#2d6a35;">
+      <div class="ov-qcard-head" style="color:#2d6a35;">Q1 <span>Jan · Feb · Mar</span></div>
+      <div class="ov-qcard-metric"><span class="ov-qm-val">498</span><span class="ov-qm-lbl">Bookings</span></div>
+      <div class="ov-qcard-metric"><span class="ov-qm-val">₹8.75L</span><span class="ov-qm-lbl">Booking Amount</span></div>
+      <div class="ov-qcard-metric"><span class="ov-qm-val">110</span><span class="ov-qm-lbl">Playcoin</span></div>
+      <div class="ov-qcard-metric"><span class="ov-qm-val">162</span><span class="ov-qm-lbl">Pkg Offered</span></div>
+      <div class="ov-qbar-track"><div class="ov-qbar-fill" style="width:100%;background:#2d6a35;"></div></div>
+      <div class="ov-qshare" style="color:#2d6a35;">Q1 2026 · Only</div>
+    </div>
+    <div class="ov-qcard" style="border-top-color:#43a851;">
+      <div class="ov-qcard-head" style="color:#43a851;">Q2 <span>Apr · May · Jun</span></div>
+      <div class="ov-qcard-metric"><span class="ov-qm-val">—</span><span class="ov-qm-lbl">Bookings</span></div>
+      <div class="ov-qcard-metric"><span class="ov-qm-val">—</span><span class="ov-qm-lbl">Booking Amount</span></div>
+      <div class="ov-qcard-metric"><span class="ov-qm-val">—</span><span class="ov-qm-lbl">Playcoin</span></div>
+      <div class="ov-qcard-metric"><span class="ov-qm-val">—</span><span class="ov-qm-lbl">Pkg Offered</span></div>
+      <div class="ov-qbar-track"><div class="ov-qbar-fill" style="width:0%;background:#43a851;"></div></div>
+      <div class="ov-qshare" style="color:#43a851;">No data yet</div>
+    </div>
+    <div class="ov-qcard" style="border-top-color:#d4860a;">
+      <div class="ov-qcard-head" style="color:#d4860a;">Q3 <span>Jul · Aug · Sep</span></div>
+      <div class="ov-qcard-metric"><span class="ov-qm-val">—</span><span class="ov-qm-lbl">Bookings</span></div>
+      <div class="ov-qcard-metric"><span class="ov-qm-val">—</span><span class="ov-qm-lbl">Booking Amount</span></div>
+      <div class="ov-qcard-metric"><span class="ov-qm-val">—</span><span class="ov-qm-lbl">Playcoin</span></div>
+      <div class="ov-qcard-metric"><span class="ov-qm-val">—</span><span class="ov-qm-lbl">Pkg Offered</span></div>
+      <div class="ov-qbar-track"><div class="ov-qbar-fill" style="width:0%;background:#d4860a;"></div></div>
+      <div class="ov-qshare" style="color:#d4860a;">No data yet</div>
+    </div>
+    <div class="ov-qcard" style="border-top-color:#c0392b;">
+      <div class="ov-qcard-head" style="color:#c0392b;">Q4 <span>Oct · Nov · Dec</span></div>
+      <div class="ov-qcard-metric"><span class="ov-qm-val">—</span><span class="ov-qm-lbl">Bookings</span></div>
+      <div class="ov-qcard-metric"><span class="ov-qm-val">—</span><span class="ov-qm-lbl">Booking Amount</span></div>
+      <div class="ov-qcard-metric"><span class="ov-qm-val">—</span><span class="ov-qm-lbl">Playcoin</span></div>
+      <div class="ov-qcard-metric"><span class="ov-qm-val">—</span><span class="ov-qm-lbl">Pkg Offered</span></div>
+      <div class="ov-qbar-track"><div class="ov-qbar-fill" style="width:0%;background:#c0392b;"></div></div>
+      <div class="ov-qshare" style="color:#c0392b;">No data yet</div>
+    </div>
+  </div>
+
+  <!-- ROW 3 · TREND (compact) + DONUT + DISTRICT BREAKDOWN -->
+  <div class="ov-row3">
+    <!-- Trend chart — compact -->
+    <div class="chart-card ov-trend-card">
+      <div class="cc-header"><div><div class="cc-title">Monthly Trend</div><div class="cc-sub">Bookings · Jan–Mar 2026</div></div><div class="cc-pill">LINE</div></div>
+      <canvas id="trendChart" height="130"></canvas>
+    </div>
+    <!-- Donut -->
+    <div class="chart-card ov-donut-card">
+      <div class="cc-header"><div><div class="cc-title">District Share</div><div class="cc-sub">By booking count</div></div></div>
+      <canvas id="donutChart" height="165"></canvas>
+    </div>
+    <!-- District stat strip -->
+    <div class="ov-dist-strip">
+      <div class="ov-ds-title">DISTRICT BREAKDOWN</div>
+      <div class="ov-ds-row" style="--dc:#2d6a35">
+        <div class="ov-ds-name">Bhubaneswar</div>
+        <div class="ov-ds-bar-wrap"><div class="ov-ds-bar" style="width:66.9%;background:#2d6a35;"></div></div>
+        <div class="ov-ds-vals"><span>333</span><span>₹7.03L</span><span>66.9%</span></div>
+      </div>
+      <div class="ov-ds-row" style="--dc:#43a851">
+        <div class="ov-ds-name">Cuttack</div>
+        <div class="ov-ds-bar-wrap"><div class="ov-ds-bar" style="width:32.1%;background:#43a851;"></div></div>
+        <div class="ov-ds-vals"><span>160</span><span>₹1.65L</span><span>32.1%</span></div>
+      </div>
+      <div class="ov-ds-row" style="--dc:#d4860a">
+        <div class="ov-ds-name">Puri</div>
+        <div class="ov-ds-bar-wrap"><div class="ov-ds-bar" style="width:1.0%;background:#d4860a;"></div></div>
+        <div class="ov-ds-vals"><span>5</span><span>₹0.07L</span><span>1.0%</span></div>
+      </div>
+
+      <div class="ov-ds-legend">
+        <span>Bookings</span><span>Booking Amount</span><span>Share</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROW 4 · INSIGHTS -->
+  <div class="section-label"><span class="sl-text">Key Stakeholder Insights</span><span class="sl-line"></span></div>
+  <div class="ov-insight-row">
+    <div class="ov-ins ov-ins-red">
+      <div class="ov-ins-num">01</div>
+      <div class="ov-ins-val">79.0%</div>
+      <div class="ov-ins-title">Bhubaneswar Dominates</div>
+      <div class="ov-ins-body">928 of 1,154 bookings and 89.5% of all revenue comes from Bhubaneswar. The remaining 2 districts combined contribute just 226 bookings.</div>
+    </div>
+    <div class="ov-ins ov-ins-amber">
+      <div class="ov-ins-num">02</div>
+      <div class="ov-ins-val">+134%</div>
+      <div class="ov-ins-title">Q4 vs Q2 Growth</div>
+      <div class="ov-ins-body">Q4 (Oct–Dec) delivered 482 bookings vs Q1's 212 — a 127% surge. October (168) was the highest single month, driven by multi-district expansion as Cuttack came online in Q4.</div>
+    </div>
+    <div class="ov-ins ov-ins-blue">
+      <div class="ov-ins-num">03</div>
+      <div class="ov-ins-val">103%</div>
+      <div class="ov-ins-title">Pkg Over-Redemption</div>
+      <div class="ov-ins-body">458 packages offered vs 422 welcome offered — 108% conversion. Cuttack: 127 pkg from 114 welcome; Bhubaneswar: 329 from 306, indicating strong carry-forward redemptions.</div>
+    </div>
+    <div class="ov-ins ov-ins-green">
+      <div class="ov-ins-num">04</div>
+      <div class="ov-ins-val">₹1,738</div>
+      <div class="ov-ins-title">Highest Avg Ticket</div>
+      <div class="ov-ins-body">Bhubaneswar earns ₹2,310 per booking — highest in the state — vs Cuttack ₹1,119 and Puri ₹900. Premium facility mix and longer session durations drive higher per-booking value.</div>
+    </div>
+    <div class="ov-ins ov-ins-red">
+      <div class="ov-ins-num">05</div>
+      <div class="ov-ins-val">9.9%</div>
+      <div class="ov-ins-title">Playcoin Penetration</div>
+      <div class="ov-ins-body">263 of 1,154 bookings used playcoins (22.8%). Bhubaneswar leads with 222 playcoin bookings (23.9% of its volume). Cuttack: 40 (17.9%).</div>
+    </div>
+    <div class="ov-ins ov-ins-amber">
+      <div class="ov-ins-num">06</div>
+      <div class="ov-ins-val">₹1,060</div>
+      <div class="ov-ins-title">Puri Emerging</div>
+      <div class="ov-ins-body">Puri had only 3 bookings in 2025. With ₹900 avg ticket and tourism proximity, targeted promotions and venue onboarding could unlock significant booking growth.</div>
+    </div>
+  </div>
+
+
+  </div><!-- /ov-content -->
+
+</div><!-- /page-overview -->
+
+<!-- ══════════ DISTRICTS ══════════ -->
+<div class="page" id="page-district">
+
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+    <span style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);">Year:</span>
+    <div style="display:flex;gap:6px;">
+    <button class="ov-year-btn" id="dist-yr-2020" onclick="setPageYear('dist','2020')">2020</button>
+    <button class="ov-year-btn" id="dist-yr-2021" onclick="setPageYear('dist','2021')">2021</button>
+    <button class="ov-year-btn" id="dist-yr-2022" onclick="setPageYear('dist','2022')">2022</button>
+    <button class="ov-year-btn" id="dist-yr-2023" onclick="setPageYear('dist','2023')">2023</button>
+    <button class="ov-year-btn" id="dist-yr-2024" onclick="setPageYear('dist','2024')">2024</button>
+    <button class="ov-year-btn" id="dist-yr-2025" onclick="setPageYear('dist','2025')">2025</button>
+    <button class="ov-year-btn active" id="dist-yr-2026" onclick="setPageYear('dist','2026')">2026</button>
+    </div>
+    <span id="dist-year-label" style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-left:4px;">2026 · CURRENT DATA</span>
+  </div>
+  <div id="dist-no-data" style="display:none;background:#ffffff;border:1px solid var(--border);box-shadow:var(--shadow);padding:80px 40px;text-align:center;margin-bottom:24px;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:56px;letter-spacing:4px;color:var(--border);line-height:1;" id="dist-no-data-year">2024</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;color:var(--text3);margin:8px 0 12px;">NO DATA AVAILABLE</div>
+    <div style="font-size:13px;color:var(--text3);line-height:1.7;max-width:380px;margin:0 auto;">
+      No booking records found for <strong id="dist-no-data-yr2"></strong>.<br>
+      Available data: <strong>Jan&nbsp;–&nbsp;Dec 2025</strong> &amp; <strong>Jan&nbsp;–&nbsp;Mar 2026</strong>.<br>
+      Select <strong>2025</strong> or <strong>2026</strong> to view the dashboard.
+    </div>
+    <button onclick="setPageYear('dist','2025')"
+      style="margin-top:20px;font-family:'Karla',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:10px 24px;cursor:pointer;background:var(--accent);color:#fff;border:none;">
+      ← View 2025 or 2026 Data
+    </button>
+  </div>
+  <div id="dist-content">
+  <div class="district-grid">
+    <div class="d-card d-imphal">
+      <div class="d-name">Bhubaneswar</div>
+      <div class="d-stat"><span class="d-stat-key">Bookings</span><span class="d-stat-val">333</span></div>
+      <div class="d-stat"><span class="d-stat-key">Booking Amount</span><span class="d-stat-val">₹7,03,072</span></div>
+      <div class="d-stat"><span class="d-stat-key">Avg / Booking</span><span class="d-stat-val">₹2,111</span></div>
+      <div class="d-stat"><span class="d-stat-key">Playcoin Used</span><span class="d-stat-val">63 bookings</span></div>
+      <div class="d-stat"><span class="d-stat-key">Coins Redeemed ₹</span><span class="d-stat-val">₹1,306</span></div>
+      <div class="d-stat"><span class="d-stat-key">Welcome Offered</span><span class="d-stat-val">96</span></div>
+      <div class="d-stat"><span class="d-stat-key">Pkg Offered</span><span class="d-stat-val">101 (105%)</span></div>
+      <div class="d-stat"><span class="d-stat-key">Pkg Value ₹</span><span class="d-stat-val">₹8,348</span></div>
+      <div class="d-share-bar"><div class="d-share-fill" style="width:66.9%"></div></div>
+    </div>
+    <div class="d-card d-chura">
+      <div class="d-name">Cuttack</div>
+      <div class="d-stat"><span class="d-stat-key">Bookings</span><span class="d-stat-val">160</span></div>
+      <div class="d-stat"><span class="d-stat-key">Booking Amount</span><span class="d-stat-val">₹1,64,825</span></div>
+      <div class="d-stat"><span class="d-stat-key">Avg / Booking</span><span class="d-stat-val">₹1,030</span></div>
+      <div class="d-stat"><span class="d-stat-key">Playcoin Used</span><span class="d-stat-val">46 bookings</span></div>
+      <div class="d-stat"><span class="d-stat-key">Coins Redeemed ₹</span><span class="d-stat-val">₹506</span></div>
+      <div class="d-stat"><span class="d-stat-key">Welcome Offered</span><span class="d-stat-val">55</span></div>
+      <div class="d-stat"><span class="d-stat-key">Pkg Offered</span><span class="d-stat-val">60 (109%)</span></div>
+      <div class="d-stat"><span class="d-stat-key">Pkg Value ₹</span><span class="d-stat-val">₹3,230</span></div>
+      <div class="d-share-bar"><div class="d-share-fill" style="width:32.1%"></div></div>
+    </div>
+    <div class="d-card d-thoubal">
+      <div class="d-name">Puri</div>
+      <div class="d-stat"><span class="d-stat-key">Bookings</span><span class="d-stat-val">5</span></div>
+      <div class="d-stat"><span class="d-stat-key">Booking Amount</span><span class="d-stat-val">₹7,200</span></div>
+      <div class="d-stat"><span class="d-stat-key">Avg / Booking</span><span class="d-stat-val">₹1,440</span></div>
+      <div class="d-stat"><span class="d-stat-key">Playcoin Used</span><span class="d-stat-val">1 booking</span></div>
+      <div class="d-stat"><span class="d-stat-key">Coins Redeemed ₹</span><span class="d-stat-val">₹7</span></div>
+      <div class="d-stat"><span class="d-stat-key">Welcome Offered</span><span class="d-stat-val">1</span></div>
+      <div class="d-stat"><span class="d-stat-key">Pkg Offered</span><span class="d-stat-val">1 (100%)</span></div>
+      <div class="d-stat"><span class="d-stat-key">Pkg Value ₹</span><span class="d-stat-val">₹72</span></div>
+      <div class="d-share-bar"><div class="d-share-fill" style="width:1.0%"></div></div>
+    </div>
+
+  </div>
+
+  <div class="chart-grid-2">
+    <div class="chart-card">
+      <div class="cc-header"><div><div class="cc-title">Monthly Bookings by District</div><div class="cc-sub" id="dist-stack-sub">Stacked · all 12 months</div></div><div class="cc-pill">STACKED</div></div>
+      <canvas id="distMonthlyStack" height="230"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="cc-header"><div><div class="cc-title">Monthly Booking Amount by District</div><div class="cc-sub" id="dist-revstack-sub">Stacked booking amount (₹)</div></div><div class="cc-pill">STACKED</div></div>
+      <canvas id="distMonthlyRevStack" height="230"></canvas>
+    </div>
+  </div>
+
+  </div><!-- /dist-content -->
+</div>
+
+<!-- ══════════ MONTHLY ══════════ -->
+<div class="page" id="page-monthly">
+
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+    <span style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);">Year:</span>
+    <div style="display:flex;gap:6px;">
+    <button class="ov-year-btn" id="mn-yr-2020" onclick="setPageYear('mn','2020')">2020</button>
+    <button class="ov-year-btn" id="mn-yr-2021" onclick="setPageYear('mn','2021')">2021</button>
+    <button class="ov-year-btn" id="mn-yr-2022" onclick="setPageYear('mn','2022')">2022</button>
+    <button class="ov-year-btn" id="mn-yr-2023" onclick="setPageYear('mn','2023')">2023</button>
+    <button class="ov-year-btn" id="mn-yr-2024" onclick="setPageYear('mn','2024')">2024</button>
+    <button class="ov-year-btn" id="mn-yr-2025" onclick="setPageYear('mn','2025')">2025</button>
+    <button class="ov-year-btn active" id="mn-yr-2026" onclick="setPageYear('mn','2026')">2026</button>
+    </div>
+    <span id="mn-year-label" style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-left:4px;">2026 · CURRENT DATA</span>
+  </div>
+  <div id="mn-no-data" style="display:none;background:#ffffff;border:1px solid var(--border);box-shadow:var(--shadow);padding:80px 40px;text-align:center;margin-bottom:24px;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:56px;letter-spacing:4px;color:var(--border);line-height:1;" id="mn-no-data-year">2024</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;color:var(--text3);margin:8px 0 12px;">NO DATA AVAILABLE</div>
+    <div style="font-size:13px;color:var(--text3);line-height:1.7;max-width:380px;margin:0 auto;">
+      No booking records found for <strong id="mn-no-data-yr2"></strong>.<br>
+      Available data: <strong>Jan&nbsp;–&nbsp;Dec 2025</strong> &amp; <strong>Jan&nbsp;–&nbsp;Mar 2026</strong>.<br>
+      Select <strong>2025</strong> or <strong>2026</strong> to view the dashboard.
+    </div>
+    <button onclick="setPageYear('mn','2025')"
+      style="margin-top:20px;font-family:'Karla',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:10px 24px;cursor:pointer;background:var(--accent);color:#fff;border:none;">
+      ← View 2025 or 2026 Data
+    </button>
+  </div>
+  <div id="mn-content">
+
+  <!-- District filter for the combo chart -->
+  <div class="mn-filter-bar">
+    <span class="mn-filter-label">View:</span>
+    <button class="mn-dpill active" id="mn-pill-all" onclick="setMonthlyDistrict('all')">All Districts</button>
+    <button class="mn-dpill" id="mn-pill-Bhubaneswar" onclick="setMonthlyDistrict('Bhubaneswar')">
+      <span class="mn-dpill-dot" style="background:#2d6a35"></span>Bhubaneswar
+    </button>
+    <button class="mn-dpill" id="mn-pill-Cuttack" onclick="setMonthlyDistrict('Cuttack')">
+      <span class="mn-dpill-dot" style="background:#43a851"></span>Cuttack
+    </button>
+    <button class="mn-dpill" id="mn-pill-Puri" onclick="setMonthlyDistrict('Puri')">
+      <span class="mn-dpill-dot" style="background:#d4860a"></span>Puri
+    </button>
+
+    <span id="mn-active-label" style="margin-left:auto;font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);">ALL DISTRICTS · 2026</span>
+  </div>
+
+  <!-- Compact interactive line chart -->
+  <div class="chart-card mn-combo-card" style="margin-bottom:20px;">
+    <div class="cc-header" style="margin-bottom:10px;">
+      <div>
+        <div class="cc-title" id="mn-chart-title">Monthly Bookings &amp; Booking Amount</div>
+        <div class="cc-sub" id="mn-chart-sub">Jan–Mar 2026 · All Districts Combined · Hover for details</div>
+      </div>
+      <div class="cc-pill">LINE</div>
+    </div>
+
+    <!-- Live hover stat strip -->
+    <div class="mn-stat-strip" id="mn-stat-strip">
+      <div class="mn-stat-item mn-stat-idle">
+        <span class="mn-stat-val" id="mn-s-month">—</span>
+        <span class="mn-stat-lbl">Month</span>
+      </div>
+      <div class="mn-stat-item">
+        <span class="mn-stat-val mn-col-bookings" id="mn-s-bookings">—</span>
+        <span class="mn-stat-lbl">Bookings</span>
+      </div>
+      <div class="mn-stat-item">
+        <span class="mn-stat-val mn-col-revenue" id="mn-s-revenue">—</span>
+        <span class="mn-stat-lbl">Booking Amount</span>
+      </div>
+      <div class="mn-stat-item">
+        <span class="mn-stat-val" id="mn-s-avg">—</span>
+        <span class="mn-stat-lbl">Avg/Booking</span>
+      </div>
+      <div class="mn-stat-item">
+        <span class="mn-stat-val" id="mn-s-mom" style="font-size:13px;">—</span>
+        <span class="mn-stat-lbl">MoM Change</span>
+      </div>
+      <div class="mn-stat-hint" id="mn-stat-hint">← Hover any point</div>
+    </div>
+
+    <canvas id="monthlyCombo" height="110"></canvas>
+  </div>
+
+  <div class="chart-grid-2">
+    <div class="chart-card">
+      <div class="cc-header"><div><div class="cc-title">Playcoin Bookings per Month</div><div class="cc-sub">Number of bookings using playcoins</div></div></div>
+      <canvas id="monthlyPlaycoin" height="200"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="cc-header"><div><div class="cc-title">Package Redemptions per Month</div><div class="cc-sub">Welcome pkg offer redeemed count</div></div></div>
+      <canvas id="monthlyPkg" height="200"></canvas>
+    </div>
+  </div>
+
+  <div class="section-label"><span class="sl-text">Monthly Summary Table</span><span class="sl-line"></span></div>
+  <div class="mn-filter-bar" style="margin-bottom:12px;">
+    <span class="mn-filter-label">District:</span>
+    <button class="mn-dpill active" id="tbl-pill-all" onclick="setTableDistrict('all')">All Districts</button>
+    <button class="mn-dpill" id="tbl-pill-Bhubaneswar" onclick="setTableDistrict('Bhubaneswar')">
+      <span class="mn-dpill-dot" style="background:#2d6a35"></span>Bhubaneswar
+    </button>
+    <button class="mn-dpill" id="tbl-pill-Cuttack" onclick="setTableDistrict('Cuttack')">
+      <span class="mn-dpill-dot" style="background:#43a851"></span>Cuttack
+    </button>
+    <button class="mn-dpill" id="tbl-pill-Puri" onclick="setTableDistrict('Puri')">
+      <span class="mn-dpill-dot" style="background:#d4860a"></span>Puri
+    </button>
+
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Month</th><th>Bookings</th><th>Booking Amount (₹)</th><th>Avg/Booking</th>
+        <th>Playcoin Used</th><th>Coins Redeemed ₹</th><th>Pkg Offered</th><th>MoM Change</th>
+      </tr></thead>
+      <tbody id="monthly-table-body"></tbody>
+    </table>
+  </div>
+  </div><!-- /mn-content -->
+</div>
+
+<!-- ══════════ INCENTIVES ══════════ -->
+<div class="page" id="page-incentive">
+
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;flex-wrap:wrap;">
+    <span style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);">Year:</span>
+    <div style="display:flex;gap:6px;">
+    <button class="ov-year-btn" id="inc-yr-2020" onclick="setPageYear('inc','2020')">2020</button>
+    <button class="ov-year-btn" id="inc-yr-2021" onclick="setPageYear('inc','2021')">2021</button>
+    <button class="ov-year-btn" id="inc-yr-2022" onclick="setPageYear('inc','2022')">2022</button>
+    <button class="ov-year-btn" id="inc-yr-2023" onclick="setPageYear('inc','2023')">2023</button>
+    <button class="ov-year-btn" id="inc-yr-2024" onclick="setPageYear('inc','2024')">2024</button>
+    <button class="ov-year-btn" id="inc-yr-2025" onclick="setPageYear('inc','2025')">2025</button>
+    <button class="ov-year-btn active" id="inc-yr-2026" onclick="setPageYear('inc','2026')">2026</button>
+    </div>
+    <span id="inc-year-label" style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--accent);margin-left:4px;">2026 · CURRENT DATA</span>
+  </div>
+  <div id="inc-no-data" style="display:none;background:#ffffff;border:1px solid var(--border);box-shadow:var(--shadow);padding:80px 40px;text-align:center;margin-bottom:24px;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:56px;letter-spacing:4px;color:var(--border);line-height:1;" id="inc-no-data-year">2024</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:2px;color:var(--text3);margin:8px 0 12px;">NO DATA AVAILABLE</div>
+    <div style="font-size:13px;color:var(--text3);line-height:1.7;max-width:380px;margin:0 auto;">
+      No booking records found for <strong id="inc-no-data-yr2"></strong>.<br>
+      Available data: <strong>Jan&nbsp;–&nbsp;Dec 2025</strong> &amp; <strong>Jan&nbsp;–&nbsp;Mar 2026</strong>.<br>
+      Select <strong>2025</strong> or <strong>2026</strong> to view the dashboard.
+    </div>
+    <button onclick="setPageYear('inc','2025')"
+      style="margin-top:20px;font-family:'Karla',sans-serif;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:10px 24px;cursor:pointer;background:var(--accent);color:#fff;border:none;">
+      ← View 2025 or 2026 Data
+    </button>
+  </div>
+  <div id="inc-content">
+  <div class="kpi-row">
+    <div class="kpi red"><div class="kpi-label">Playcoin Bookings</div><div class="kpi-value">110</div><div class="kpi-sub">22.1% of total bookings</div></div>
+    <div class="kpi blue"><div class="kpi-label">Coins Redeemed ₹</div><div class="kpi-value">₹1,819</div><div class="kpi-sub">Monetary value redeemed</div></div>
+    <div class="kpi green"><div class="kpi-label">Pkg Offered</div><div class="kpi-value">162</div><div class="kpi-sub">vs 152 welcome offered → 107%</div></div>
+    <div class="kpi amber"><div class="kpi-label">Pkg Offered Value</div><div class="kpi-value">₹11,650</div><div class="kpi-sub">Total pkg redemption ₹</div></div>
+  </div>
+
+  <div class="chart-grid-2">
+    <div class="chart-card">
+      <div class="cc-header"><div><div class="cc-title">Playcoin Usage by District</div><div class="cc-sub">Count of playcoin bookings</div></div></div>
+      <canvas id="playcoinDist" height="180"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="cc-header"><div><div class="cc-title">Package: Offered vs Redeemed</div><div class="cc-sub">By district comparison</div></div></div>
+      <canvas id="pkgDist" height="180"></canvas>
+    </div>
+  </div>
+
+  <div class="chart-grid-2">
+    <div class="chart-card">
+      <div class="cc-header"><div><div class="cc-title">Monthly Playcoin Trend</div><div class="cc-sub">Bookings with playcoin usage</div></div></div>
+      <canvas id="playcoinMonthly" height="180"></canvas>
+    </div>
+    <div class="chart-card">
+      <div class="cc-header"><div><div class="cc-title">Monthly Coins Redeemed (₹)</div><div class="cc-sub">Monetary value per month</div></div></div>
+      <canvas id="coinsAmtMonthly" height="180"></canvas>
+    </div>
+  </div>
+
+  <div class="section-label"><span class="sl-text">Incentive Summary by District</span><span class="sl-line"></span></div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>District</th><th>Bookings</th><th>Playcoin Used</th><th>Playcoin Rate</th>
+        <th>Coins ₹</th><th>Welcome Offered</th><th>Pkg Offered</th><th>Conversion</th><th>Pkg Value ₹</th>
+      </tr></thead>
+      <tbody id="incentive-table-body"></tbody>
+    </table>
+  </div>
+  </div><!-- /inc-content -->
+</div>
+
+<!-- ══════════ RAW DATA ══════════ -->
+<div class="page" id="page-rawdata">
+  <div class="filter-bar">
+    <span class="fb-label">Year:</span>
+    <select class="fb-select" id="filter-year" onchange="onYearChange()" style="min-width:100px;">
+      <option value="2020">2020</option>
+      <option value="2021">2021</option>
+      <option value="2022">2022</option>
+      <option value="2023">2023</option>
+      <option value="2024">2024</option>
+      <option value="2025">2025</option>
+      <option value="2026" selected>2026</option>
+    </select>
+    <span class="fb-label" style="margin-left:4px;">District:</span>
+    <select class="fb-select" id="filter-district" onchange="renderRawTable()">
+      <option value="all">All Districts</option>
+      <option value="Bhubaneswar">Bhubaneswar</option>
+      <option value="Cuttack">Cuttack</option>
+      <option value="Puri">Puri</option>
+    </select>
+    <span class="fb-label" style="margin-left:4px;">Quarter:</span>
+    <select class="fb-select" id="filter-quarter" onchange="onQuarterSelectChange()">
+      <option value="all">All Quarters</option>
+      <option value="Q1">Q1 — Jan · Feb · Mar</option>
+      <option value="Q2">Q2 — Apr · May · Jun</option>
+      <option value="Q3">Q3 — Jul · Aug · Sep</option>
+      <option value="Q4">Q4 — Oct · Nov · Dec</option>
+    </select>
+    <span class="fb-label" style="margin-left:4px;">Month:</span>
+    <select class="fb-select" id="filter-month" onchange="onMonthSelectChange()">
+      <option value="0">All Months</option>
+      <option value="1">January</option><option value="2">February</option><option value="3">March</option>
+      <option value="4">April</option><option value="5">May</option><option value="6">June</option>
+      <option value="7">July</option><option value="8">August</option><option value="9">September</option>
+      <option value="10">October</option><option value="11">November</option><option value="12">December</option>
+    </select>
+    <span class="fb-label" style="margin-left:4px;">Sort:</span>
+    <select class="fb-select" id="filter-sort" onchange="renderRawTable()">
+      <option value="month_asc">Month ↑</option>
+      <option value="month_desc">Month ↓</option>
+      <option value="count_desc">Bookings ↓</option>
+      <option value="amount_desc">Booking Amount ↓</option>
+      <option value="district_asc">District A–Z</option>
+    </select>
+    <button class="fb-btn secondary" onclick="resetRaw()">Reset</button>
+  </div>
+
+  <!-- Quarter pill quick-select -->
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;">
+    <span style="font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--text3);">Quick Select:</span>
+    <button class="qpill active" id="qpill-all" onclick="setQuarterPill('all')">All Year</button>
+    <button class="qpill" id="qpill-Q1" onclick="setQuarterPill('Q1')">
+      <span class="qpill-label">Q1</span><span class="qpill-months">Jan · Feb · Mar</span>
+    </button>
+    <button class="qpill" id="qpill-Q2" onclick="setQuarterPill('Q2')">
+      <span class="qpill-label">Q2</span><span class="qpill-months">Apr · May · Jun</span>
+    </button>
+    <button class="qpill" id="qpill-Q3" onclick="setQuarterPill('Q3')">
+      <span class="qpill-label">Q3</span><span class="qpill-months">Jul · Aug · Sep</span>
+    </button>
+    <button class="qpill" id="qpill-Q4" onclick="setQuarterPill('Q4')">
+      <span class="qpill-label">Q4</span><span class="qpill-months">Oct · Nov · Dec</span>
+    </button>
+    <div id="quarter-kpi-strip" style="display:none;margin-left:auto;display:flex;gap:16px;align-items:center;"></div>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr>
+        <th>Month</th><th>District</th><th>Bookings</th><th>Booking Amount (₹)</th><th>Avg/Booking</th>
+        <th>Playcoin Used</th><th>Coins ₹</th><th>Welcome Offered</th><th>Pkg Offered</th><th>Pkg Value ₹</th>
+      </tr></thead>
+      <tbody id="raw-table-body"></tbody>
+    </table>
+  </div>
+  <div style="font-size:11px;color:var(--text3);margin-top:8px;font-weight:500;" id="raw-count"></div>
+</div>
+
+</div><!-- /main -->
+
+<script>
+// ═══════════════════════════════════════
+// EXACT DATA FROM Odisha_Booking_Amount_Data_2025&2026_Q1.xlsx
+// ═══════════════════════════════════════
+const RAW = [
+  // Jan 2025
+  {id:341, month:1,  mn:"January",   district:"Bhubaneswar", bc:80,  ba:177350, pc:18, ca:470,  pr:39, pra:3576, wo:35, woa:2988},
+  // Feb 2025
+  {id:342, month:2,  mn:"February",  district:"Bhubaneswar", bc:47,  ba:102800, pc:14, ca:275,  pr:16, pra:1452, wo:16, woa:1452},
+  // Mar 2025
+  {id:343, month:3,  mn:"March",     district:"Bhubaneswar", bc:85,  ba:201600, pc:18, ca:622,  pr:38, pra:3776, wo:32, woa:2976},
+  // Apr 2025
+  {id:344, month:4,  mn:"April",     district:"Bhubaneswar", bc:65,  ba:149691, pc:15, ca:301,  pr:27, pra:2479, wo:26, woa:2332},
+  // May 2025
+  {id:345, month:5,  mn:"May",       district:"Bhubaneswar", bc:74,  ba:176137, pc:22, ca:402,  pr:31, pra:2800, wo:31, woa:2800},
+  // Jun 2025
+  {id:346, month:6,  mn:"June",      district:"Bhubaneswar", bc:98,  ba:215097, pc:23, ca:1118, pr:28, pra:2426, wo:24, woa:2126},
+  {id:347, month:6,  mn:"June",      district:"Puri",        bc:1,   ba:1200,   pc:0,  ca:0,    pr:0,  pra:0,    wo:0,  woa:0},
+  // Jul 2025
+  {id:348, month:7,  mn:"July",      district:"Bhubaneswar", bc:69,  ba:160246, pc:15, ca:613,  pr:19, pra:1742, wo:19, woa:1742},
+  // Aug 2025
+  {id:349, month:8,  mn:"August",    district:"Bhubaneswar", bc:89,  ba:205246, pc:17, ca:567,  pr:28, pra:2386, wo:25, woa:2112},
+  {id:350, month:8,  mn:"August",    district:"Cuttack",     bc:1,   ba:2700,   pc:0,  ca:0,    pr:0,  pra:0,    wo:0,  woa:0},
+  // Sep 2025
+  {id:351, month:9,  mn:"September", district:"Bhubaneswar", bc:61,  ba:138750, pc:12, ca:201,  pr:17, pra:1418, wo:17, woa:1418},
+  {id:352, month:9,  mn:"September", district:"Cuttack",     bc:1,   ba:1500,   pc:0,  ca:0,    pr:1,  pra:90,   wo:1,  woa:90},
+  {id:353, month:9,  mn:"September", district:"Puri",        bc:1,   ba:300,    pc:0,  ca:0,    pr:1,  pra:18,   wo:1,  woa:18},
+  // Oct 2025
+  {id:354, month:10, mn:"October",   district:"Bhubaneswar", bc:90,  ba:211295, pc:29, ca:815,  pr:27, pra:2492, wo:24, woa:2192},
+  {id:355, month:10, mn:"October",   district:"Cuttack",     bc:78,  ba:87700,  pc:10, ca:116,  pr:48, pra:3042, wo:35, woa:1962},
+  // Nov 2025
+  {id:356, month:11, mn:"November",  district:"Bhubaneswar", bc:67,  ba:164896, pc:18, ca:306,  pr:26, pra:2310, wo:26, woa:2310},
+  {id:357, month:11, mn:"November",  district:"Cuttack",     bc:63,  ba:80300,  pc:11, ca:198,  pr:36, pra:2222, wo:36, woa:2222},
+  // Dec 2025
+  {id:358, month:12, mn:"December",  district:"Bhubaneswar", bc:103, ba:240890, pc:21, ca:575,  pr:33, pra:7372, wo:31, woa:2872},
+  {id:359, month:12, mn:"December",  district:"Cuttack",     bc:80,  ba:77350,  pc:19, ca:242,  pr:42, pra:2164, wo:42, woa:2164},
+  {id:360, month:12, mn:"December",  district:"Puri",        bc:1,   ba:1200,   pc:1,  ca:2,    pr:1,  pra:48,   wo:1,  woa:48},
+];
+
+// ═══════════════════════════════════════
+// 2026 DATA — Jan–Mar (Q1 only so far)
+// ═══════════════════════════════════════
+const RAW_2026 = [
+  {id:361, month:1,  mn:"January",  district:"Bhubaneswar", bc:105, ba:242997, pc:18, ca:631, pr:28, pra:2585, wo:23, woa:2038},
+  {id:362, month:1,  mn:"January",  district:"Cuttack",     bc:73,  ba:83400,  pc:24, ca:227, pr:33, pra:1884, wo:28, woa:1630},
+  {id:363, month:1,  mn:"January",  district:"Puri",        bc:2,   ba:2400,   pc:1,  ca:7,   pr:0,  pra:0,    wo:0,  woa:0},
+  {id:364, month:2,  mn:"February", district:"Bhubaneswar", bc:74,  ba:147875, pc:16, ca:317, pr:24, pra:1961, wo:24, woa:1961},
+  {id:365, month:2,  mn:"February", district:"Cuttack",     bc:48,  ba:43400,  pc:16, ca:228, pr:15, pra:704,  wo:15, woa:704},
+  {id:366, month:3,  mn:"March",    district:"Bhubaneswar", bc:154, ba:312200, pc:29, ca:358, pr:49, pra:3802, wo:49, woa:3802},
+  {id:367, month:3,  mn:"March",    district:"Cuttack",     bc:39,  ba:38025,  pc:6,  ca:51,  pr:12, pra:642,  wo:12, woa:642},
+  {id:368, month:3,  mn:"March",    district:"Puri",        bc:3,   ba:4800,   pc:0,  ca:0,   pr:1,  pra:72,   wo:1,  woa:72},
+];
+
+// Active dataset — switched by year
+let ACTIVE_RAW = RAW_2026;
+let ACTIVE_YEAR = '2026';
+
+function getRAW(yr) { return yr === '2026' ? RAW_2026 : RAW; }
+
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+const DISTRICTS = ["Bhubaneswar","Cuttack","Puri"];
+const VENUES = [
+  {district:"Bhubaneswar", name:"Venue data not available"},
+  {district:"Cuttack",     name:"Venue data not available"},
+  {district:"Puri",        name:"Venue data not available"},
+];
+const D_COL = { Bhubaneswar:"#2d6a35", Cuttack:"#43a851", Puri:"#d4860a" };
+const D_BG  = { Bhubaneswar:"rgba(45,106,53,0.10)", Cuttack:"rgba(67,168,81,0.10)", Puri:"rgba(212,134,10,0.10)" };
+
+function aggMonth() {
+  return MONTHS.map((m,i) => {
+    const rows = ACTIVE_RAW.filter(r=>r.month===i+1);
+    return { mn:m, bc:rows.reduce((s,r)=>s+r.bc,0), ba:rows.reduce((s,r)=>s+r.ba,0), pc:rows.reduce((s,r)=>s+r.pc,0), ca:rows.reduce((s,r)=>s+r.ca,0), pr:rows.reduce((s,r)=>s+r.pr,0), vc:rows.reduce((s,r)=>s+(r.vc||0),0) };
+  });
+}
+
+function aggDistrict() {
+  return DISTRICTS.map(d => {
+    const rows = ACTIVE_RAW.filter(r=>r.district===d);
+    return { district:d, bc:rows.reduce((s,r)=>s+r.bc,0), ba:rows.reduce((s,r)=>s+r.ba,0), pc:rows.reduce((s,r)=>s+r.pc,0), ca:rows.reduce((s,r)=>s+r.ca,0), pr:rows.reduce((s,r)=>s+r.pr,0), pra:rows.reduce((s,r)=>s+r.pra,0), wo:rows.reduce((s,r)=>s+r.wo,0) };
+  });
+}
+
+Chart.defaults.font.family="'Karla',sans-serif";
+Chart.defaults.font.size=11;
+Chart.defaults.color="#7a9b7e";
+const GRID = { color:"rgba(180,210,180,0.4)", borderColor:"rgba(180,210,180,0.4)" };
+let charts={};
+function dc(id){ if(charts[id]){charts[id].destroy();delete charts[id];} }
+
+function buildTrendChart(){
+  dc('trendChart');
+  const md=aggMonth();
+  charts.trendChart=new Chart(document.getElementById('trendChart').getContext('2d'),{
+    type:'line',
+    data:{ labels:md.map(m=>m.mn.slice(0,3)), datasets:[
+      { label:'Bookings', data:md.map(m=>m.bc), borderColor:'#2d6a35', backgroundColor:(ctx)=>{ const g=ctx.chart.ctx.createLinearGradient(0,0,0,ctx.chart.height); g.addColorStop(0,'rgba(45,106,53,0.30)'); g.addColorStop(1,'rgba(45,106,53,0.00)'); return g; }, fill:true, tension:0.4, pointRadius:3, pointBackgroundColor:'#2d6a35', yAxisID:'y', borderWidth:2.5 },
+    ]},
+    options:{ responsive:true, interaction:{mode:'index',intersect:false},
+      plugins:{ legend:{display:false}, tooltip:{callbacks:{title:c=>`${c[0].label} 2025`, label:c=>`${c.dataset.label}: ${c.parsed.y}`}} },
+      scales:{
+        x:{grid:{color:'transparent'},ticks:{color:'#7a9b7e',font:{size:10}}},
+        y:{type:'linear',position:'left',grid:GRID,ticks:{color:'#2d6a35',font:{size:10}}}
+      }
+    }
+  });
+}
+
+function buildAvgTicketChart(){
+  dc('avgTicketChart');
+  const bd=aggDistrict();
+  charts.avgTicketChart=new Chart(document.getElementById('avgTicketChart').getContext('2d'),{
+    type:'bar',
+    data:{ labels:bd.map(d=>d.district), datasets:[{
+      label:'Avg ₹/Booking',
+      data:bd.map(d=>d.bc>0?Math.round(d.ba/d.bc):0),
+      backgroundColor:bd.map(d=>D_COL[d.district]),
+      borderRadius:3,
+    }]},
+    options:{ responsive:true, plugins:{legend:{display:false},
+      tooltip:{callbacks:{label:c=>`₹${c.parsed.y.toLocaleString('en-IN')}/booking`}}},
+      scales:{
+        x:{grid:{color:'transparent'},ticks:{color:'#7a9b7e'}},
+        y:{grid:GRID,ticks:{color:'#7a9b7e',callback:v=>`₹${v.toLocaleString('en-IN')}`}}
+      }
+    }
+  });
+}
+
+function buildDonut(){
+  dc('donutChart');
+  const bd=aggDistrict();
+  charts.donutChart=new Chart(document.getElementById('donutChart').getContext('2d'),{
+    type:'doughnut',
+    data:{ labels:bd.map(d=>d.district), datasets:[{ data:bd.map(d=>d.bc), backgroundColor:bd.map(d=>D_COL[d.district]), borderColor:'#fff', borderWidth:3, hoverOffset:8 }]},
+    options:{ responsive:true, cutout:'60%', plugins:{
+      legend:{position:'bottom',labels:{boxWidth:12,padding:14,color:'#4a6b4e'}},
+      tooltip:{callbacks:{label:c=>{ const t=ACTIVE_RAW.reduce((s,r)=>s+r.bc,0); return ` ${c.label}: ${c.parsed.toLocaleString('en-IN')} (${t>0?(c.parsed/t*100).toFixed(1):'0'}%)`; }}}
+    }}
+  });
+}
+
+function buildDistAmtBar(){
+  dc('distAmtBar');
+  const bd=aggDistrict();
+  charts.distAmtBar=new Chart(document.getElementById('distAmtBar').getContext('2d'),{
+    type:'bar', data:{ labels:bd.map(d=>d.district), datasets:[{ label:'Booking Amount ₹', data:bd.map(d=>d.ba), backgroundColor:bd.map(d=>D_COL[d.district]), borderRadius:3 }]},
+    options:{ responsive:true, plugins:{legend:{display:false}}, scales:{x:{grid:{color:'transparent'},ticks:{color:'#7a9b7e'}}, y:{grid:GRID,ticks:{color:'#7a9b7e',callback:v=>`₹${(v/100000).toFixed(1)}L`}}}}
+  });
+}
+
+function buildIncentiveMix(){
+  dc('incentiveMix');
+  const bd=aggDistrict();
+  charts.incentiveMix=new Chart(document.getElementById('incentiveMix').getContext('2d'),{
+    type:'bar', data:{ labels:bd.map(d=>d.district), datasets:[
+      { label:'Playcoin Used', data:bd.map(d=>d.pc), backgroundColor:'#2d6a35', borderRadius:2 },
+      { label:'Pkg Offered', data:bd.map(d=>d.pr), backgroundColor:'#43a851', borderRadius:2 }
+    ]},
+    options:{ responsive:true, plugins:{legend:{labels:{boxWidth:12,padding:14,color:'#4a6b4e'}}}, scales:{x:{grid:{color:'transparent'},ticks:{color:'#7a9b7e'}}, y:{grid:GRID,ticks:{color:'#7a9b7e'}}}}
+  });
+}
+
+function buildDistMonthlyStack(){
+  dc('distMonthlyStack');
+  const allLabels = MONTHS.map(m => m.slice(0,3));
+  const currentMonth = new Date().getMonth(); // 0-indexed
+
+  // For 2026: data only exists for months with records; rest are null (gap)
+  const datasets = DISTRICTS.map(d => ({
+    label: d,
+    data: MONTHS.map((_, i) => {
+      const r = ACTIVE_RAW.find(r => r.month === i+1 && r.district === d);
+      return r ? r.bc : null;
+    }),
+    backgroundColor: D_COL[d],
+    borderRadius: 2,
+    skipNull: true,
+  }));
+
+  charts.distMonthlyStack = new Chart(document.getElementById('distMonthlyStack').getContext('2d'), {
+    type: 'bar',
+    data: { labels: allLabels, datasets },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { boxWidth:10, padding:12, color:'#4a6b4e' } } },
+      scales: {
+        x: {
+          stacked: true,
+          grid: { color: 'transparent' },
+          ticks: {
+            color: ctx => {
+              if (ACTIVE_YEAR !== '2026') return '#7a9b7e';
+              return ctx.index === currentMonth ? '#2d6a35' : '#7a9b7e';
+            },
+            font: ctx => ({
+              size: 11,
+              weight: (ACTIVE_YEAR === '2026' && ctx.index === currentMonth) ? '700' : '400',
+            }),
+            callback: (val, idx) => {
+              const label = allLabels[idx];
+              return (ACTIVE_YEAR === '2026' && idx === currentMonth) ? '▼ ' + label : label;
+            }
+          }
+        },
+        y: { stacked: true, grid: GRID, ticks: { color:'#7a9b7e' } }
+      }
+    }
+  });
+  const sub1 = document.getElementById('dist-stack-sub');
+  if(sub1) sub1.textContent = ACTIVE_YEAR === '2026'
+    ? 'Stacked · Jan–Mar 2026 · remaining months pending'
+    : 'Stacked · all 12 months';
+}
+
+function buildDistMonthlyRevStack(){
+  dc('distMonthlyRevStack');
+  const allLabels = MONTHS.map(m => m.slice(0,3));
+  const currentMonth = new Date().getMonth(); // 0-indexed
+
+  const datasets = DISTRICTS.map(d => ({
+    label: d,
+    data: MONTHS.map((_, i) => {
+      const r = ACTIVE_RAW.find(r => r.month === i+1 && r.district === d);
+      return r ? r.ba : null;
+    }),
+    backgroundColor: D_COL[d],
+    borderRadius: 2,
+    skipNull: true,
+  }));
+
+  charts.distMonthlyRevStack = new Chart(document.getElementById('distMonthlyRevStack').getContext('2d'), {
+    type: 'bar',
+    data: { labels: allLabels, datasets },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { boxWidth:10, padding:12, color:'#4a6b4e' } } },
+      scales: {
+        x: {
+          stacked: true,
+          grid: { color: 'transparent' },
+          ticks: {
+            color: ctx => {
+              if (ACTIVE_YEAR !== '2026') return '#7a9b7e';
+              return ctx.index === currentMonth ? '#2d6a35' : '#7a9b7e';
+            },
+            font: ctx => ({
+              size: 11,
+              weight: (ACTIVE_YEAR === '2026' && ctx.index === currentMonth) ? '700' : '400',
+            }),
+            callback: (val, idx) => {
+              const label = allLabels[idx];
+              return (ACTIVE_YEAR === '2026' && idx === currentMonth) ? '▼ ' + label : label;
+            }
+          }
+        },
+        y: {
+          stacked: true,
+          grid: GRID,
+          ticks: { color:'#7a9b7e', callback: v => `₹${(v/1000).toFixed(0)}K` }
+        }
+      }
+    }
+  });
+  const sub2 = document.getElementById('dist-revstack-sub');
+  if(sub2) sub2.textContent = ACTIVE_YEAR === '2026'
+    ? 'Stacked booking amount (₹) · Jan–Mar 2026'
+    : 'Stacked booking amount (₹)';
+}
+
+let activeVenueDistrict = 'Bhubaneswar';
+
+function setVenueDistrict(d) {
+  activeVenueDistrict = d;
+  ['Bhubaneswar','Cuttack','Puri'].forEach(k => {
+    const el = document.getElementById('vl-pill-' + k);
+    if (el) el.classList.toggle('active', k === d);
+  });
+  buildVenueList();
+}
+
+function buildVenueList(){
+  const d = activeVenueDistrict;
+  const venues = VENUES.filter(v => v.district === d);
+  const color = D_COL[d];
+  const el = document.getElementById('venue-list');
+  if (!el) return;
+
+  if (!venues.length) {
+    el.innerHTML = `<div class="vl-empty">No active venues recorded for ${d}.</div>`;
+    return;
+  }
+
+  el.innerHTML = `<div class="vl-venue-grid">${
+    venues.map((v, i) => `
+      <div class="vl-venue-card" style="border-left:3px solid ${color};">
+        <span class="vl-venue-num" style="color:${color};">${String(i+1).padStart(2,'0')}</span>
+        <span class="vl-venue-name">${v.name}</span>
+      </div>`).join('')
+  }</div>`;
+}
+
+let activeMonthlyDistrict = 'all';
+let mnComboData = [];
+
+const VC_DATA = {
+  Bhubaneswar: [1,1,1,1,1,1,1,1,1,1,1,1],
+  Cuttack:     [0,0,0,0,0,0,0,1,1,1,1,1],
+  Puri:        [0,0,0,0,0,1,0,0,1,0,0,1],
+};
+function setMonthlyDistrict(d){
+  activeMonthlyDistrict = d;
+  ['all','Bhubaneswar','Cuttack','Puri'].forEach(k=>{
+    const el = document.getElementById('mn-pill-'+k);
+    if(el) el.classList.toggle('active', k===d);
+  });
+  const lbl = document.getElementById('mn-active-label');
+  if(lbl) lbl.textContent = d==='all' ? 'ALL DISTRICTS · ' + ACTIVE_YEAR : `${d.toUpperCase()} · ${ACTIVE_YEAR}`;
+  const title = document.getElementById('mn-chart-title');
+  const sub   = document.getElementById('mn-chart-sub');
+  if(title) title.textContent = d==='all' ? 'Monthly Bookings & Booking Amount' : `Monthly Bookings & Booking Amount — ${d}`;
+  if(sub)   sub.textContent   = d==='all' ? `Jan–${ACTIVE_YEAR==='2026'?'Mar':'Dec'} ${ACTIVE_YEAR} · All Districts Combined · Hover for details` : `Jan–${ACTIVE_YEAR==='2026'?'Mar':'Dec'} ${ACTIVE_YEAR} · ${d} only · Hover for details`;
+  // Reset stat strip
+  ['mn-s-month','mn-s-bookings','mn-s-revenue','mn-s-avg','mn-s-mom'].forEach(id=>{
+    const el=document.getElementById(id); if(el) el.textContent='—';
+  });
+  const hint = document.getElementById('mn-stat-hint');
+  if(hint) hint.classList.remove('hidden');
+  buildMonthlyCombo();
+}
+
+function buildMonthlyCombo(){
+  dc('monthlyCombo');
+  const d = activeMonthlyDistrict;
+
+  mnComboData = MONTHS.map((mn, i) => {
+    const month = i + 1;
+    const rows = d === 'all'
+      ? ACTIVE_RAW.filter(r => r.month === month)
+      : ACTIVE_RAW.filter(r => r.month === month && r.district === d);
+    const bc = rows.reduce((s,r)=>s+r.bc, 0);
+    const ba = rows.reduce((s,r)=>s+r.ba, 0);
+    return { mn, bc, ba };
+  });
+
+  const lineColor = d === 'all' ? '#2d6a35' : D_COL[d];
+
+  // Custom crosshair plugin
+  const crosshairPlugin = {
+    id: 'crosshair',
+    afterDraw(chart) {
+      if (chart._crosshairX == null) return;
+      const ctx = chart.ctx;
+      const x = chart._crosshairX;
+      const { top, bottom } = chart.chartArea;
+      ctx.save();
+      ctx.beginPath();
+      ctx.setLineDash([4, 4]);
+      ctx.strokeStyle = 'rgba(100,100,100,0.25)';
+      ctx.lineWidth = 1;
+      ctx.moveTo(x, top);
+      ctx.lineTo(x, bottom);
+      ctx.stroke();
+      ctx.restore();
+    }
+  };
+
+  charts.monthlyCombo = new Chart(document.getElementById('monthlyCombo').getContext('2d'), {
+    type: 'line',
+    plugins: [crosshairPlugin],
+    data: {
+      labels: mnComboData.map(m => m.mn.slice(0,3)),
+      datasets: [
+        {
+          label: 'Bookings',
+          data: mnComboData.map(m => m.bc),
+          borderColor: lineColor,
+          backgroundColor: 'transparent',
+          tension: 0.4,
+          pointRadius: 4,
+          pointHoverRadius: 8,
+          pointBackgroundColor: '#fff',
+          pointBorderColor: lineColor,
+          pointBorderWidth: 2.5,
+          pointHoverBackgroundColor: lineColor,
+          pointHoverBorderColor: '#fff',
+          pointHoverBorderWidth: 2,
+          borderWidth: 2.5,
+          yAxisID: 'y',
+        },
+        {
+          label: 'Booking Amount (₹)',
+          data: mnComboData.map(m => m.ba),
+          borderColor: '#43a851',
+          backgroundColor: 'transparent',
+          tension: 0.4,
+          pointRadius: 4,
+          pointHoverRadius: 8,
+          pointBackgroundColor: '#fff',
+          pointBorderColor: '#43a851',
+          pointBorderWidth: 2.5,
+          pointHoverBackgroundColor: '#43a851',
+          pointHoverBorderColor: '#fff',
+          pointHoverBorderWidth: 2,
+          borderDash: [6, 3],
+          borderWidth: 2.5,
+          yAxisID: 'y1',
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      animation: { duration: 500, easing: 'easeInOutQuart' },
+      plugins: {
+        legend: {
+          position: 'top', align: 'end',
+          labels: { boxWidth: 24, boxHeight: 2, padding: 18, color: '#4a6b4e', usePointStyle: false }
+        },
+        tooltip: {
+          enabled: true,
+          backgroundColor: '#ffffff',
+          borderColor: '#c8dec8',
+          borderWidth: 1,
+          titleColor: '#1a2e1c',
+          titleFont: { family: "'Bebas Neue', sans-serif", size: 15, weight: 'normal' },
+          bodyColor: '#4a6b4e',
+          bodyFont: { family: "'Karla', sans-serif", size: 12 },
+          padding: { top: 10, bottom: 10, left: 14, right: 14 },
+          caretSize: 6,
+          cornerRadius: 2,
+          displayColors: true,
+          boxWidth: 10,
+          boxHeight: 10,
+          callbacks: {
+            title: items => {
+              const mn = mnComboData[items[0].dataIndex];
+              return mn ? mn.mn + ' ' + ACTIVE_YEAR : items[0].label;
+            },
+            label: ctx => {
+              const mn = mnComboData[ctx.dataIndex];
+              if (!mn) return '';
+              if (ctx.dataset.label === 'Bookings') {
+                return `  Bookings:  ${mn.bc.toLocaleString('en-IN')}`;
+              } else {
+                return `  Booking Amount: ₹${mn.ba.toLocaleString('en-IN')}`;
+              }
+            }
+          }
+        },
+      },
+      onHover: (event, elements) => {
+        if (!elements || elements.length === 0) return;
+        const idx = elements[0].index;
+        const m   = mnComboData[idx];
+        if (!m) return;
+
+        const elMonth = document.getElementById('mn-s-month');
+        const elBC    = document.getElementById('mn-s-bookings');
+        const elBA    = document.getElementById('mn-s-revenue');
+        const elAvg   = document.getElementById('mn-s-avg');
+        const elMom   = document.getElementById('mn-s-mom');
+        const hint    = document.getElementById('mn-stat-hint');
+
+        if(elMonth) elMonth.textContent = m.mn.slice(0,3);
+        if(elBC)    elBC.textContent    = m.bc.toLocaleString('en-IN');
+        if(elBA)    elBA.textContent    = '₹' + (m.ba/1000).toFixed(1) + 'K';
+        if(elAvg)   elAvg.textContent   = m.bc > 0 ? '₹' + Math.round(m.ba/m.bc).toLocaleString('en-IN') : '—';
+
+        const prev = idx > 0 ? mnComboData[idx-1] : null;
+        if(elMom && prev && prev.bc > 0){
+          const pct = ((m.bc - prev.bc) / prev.bc * 100).toFixed(1);
+          elMom.textContent = (parseFloat(pct) >= 0 ? '↑ +' : '↓ ') + pct + '%';
+          elMom.style.color = parseFloat(pct) >= 0 ? '#2d6a35' : '#c0392b';
+        } else if(elMom){
+          elMom.textContent = '—';
+          elMom.style.color = '';
+        }
+
+        if(hint) hint.classList.add('hidden');
+
+        // Draw crosshair
+        const chart = charts.monthlyCombo;
+        if(chart && elements[0]) {
+          chart._crosshairX = elements[0].element.x;
+          chart.draw();
+        }
+      },
+      scales: {
+        x: {
+          grid: { color: 'rgba(216,210,198,0.35)', drawBorder: false },
+          ticks: { color: '#7a9b7e', font: { size: 11 } }
+        },
+        y: {
+          type: 'linear', position: 'left',
+          grid: { color: 'rgba(216,210,198,0.35)', drawBorder: false },
+          ticks: { color: lineColor, font: { size: 11 }, padding: 6 },
+          title: { display: true, text: 'Bookings', color: lineColor, font: { size: 10, weight: '700' } }
+        },
+        y1: {
+          type: 'linear', position: 'right',
+          grid: { drawOnChartArea: false },
+          ticks: { color: '#43a851', font: { size: 11 }, padding: 6, callback: v => `₹${(v/1000).toFixed(0)}K` },
+          title: { display: true, text: 'Booking Amount (₹)', color: '#43a851', font: { size: 10, weight: '700' } }
+        }
+      }
+    }
+  });
+
+  // Reset crosshair on mouse leave
+  const canvas = document.getElementById('monthlyCombo');
+  canvas.onmouseleave = () => {
+    const chart = charts.monthlyCombo;
+    if(chart){ chart._crosshairX = null; chart.draw(); }
+  };
+}
+
+function buildMonthlyPlaycoin(){
+  dc('monthlyPlaycoin');
+  const md=aggMonth();
+  charts.monthlyPlaycoin=new Chart(document.getElementById('monthlyPlaycoin').getContext('2d'),{
+    type:'bar', data:{ labels:md.map(m=>m.mn.slice(0,3)), datasets:[{ label:'Playcoin Bookings', data:md.map(m=>m.pc), backgroundColor:'#2d6a35', borderRadius:3 }]},
+    options:{ responsive:true, plugins:{legend:{display:false}}, scales:{x:{grid:{color:'transparent'},ticks:{color:'#7a9b7e'}}, y:{grid:GRID,ticks:{color:'#7a9b7e'}}}}
+  });
+}
+
+function buildMonthlyPkg(){
+  dc('monthlyPkg');
+  const md=aggMonth();
+  charts.monthlyPkg=new Chart(document.getElementById('monthlyPkg').getContext('2d'),{
+    type:'bar', data:{ labels:md.map(m=>m.mn.slice(0,3)), datasets:[{ label:'Pkg Offered', data:md.map(m=>m.pr), backgroundColor:'#d4860a', borderRadius:3 }]},
+    options:{ responsive:true, plugins:{legend:{display:false}}, scales:{x:{grid:{color:'transparent'},ticks:{color:'#7a9b7e'}}, y:{grid:GRID,ticks:{color:'#7a9b7e'}}}}
+  });
+}
+
+let activeTableDistrict = 'all';
+
+function setTableDistrict(d) {
+  activeTableDistrict = d;
+  ['all','Bhubaneswar','Cuttack','Puri'].forEach(k => {
+    const el = document.getElementById('tbl-pill-' + k);
+    if (el) el.classList.toggle('active', k === d);
+  });
+  buildMonthlyTable();
+}
+
+function buildMonthlyTable(){
+  const d = activeTableDistrict;
+  const md = MONTHS.map((mn, i) => {
+    const month = i + 1;
+    const rows = d === 'all'
+      ? ACTIVE_RAW.filter(r => r.month === month)
+      : ACTIVE_RAW.filter(r => r.month === month && r.district === d);
+    return {
+      mn,
+      bc: rows.reduce((s,r)=>s+r.bc,0),
+      ba: rows.reduce((s,r)=>s+r.ba,0),
+      pc: rows.reduce((s,r)=>s+r.pc,0),
+      ca: rows.reduce((s,r)=>s+r.ca,0),
+      pr: rows.reduce((s,r)=>s+r.pr,0),
+    };
+  }).filter(m => m.bc > 0 || d === 'all');
+
+  const totalBC = md.reduce((s,m)=>s+m.bc,0);
+  const totalBA = md.reduce((s,m)=>s+m.ba,0);
+  const totalPC = md.reduce((s,m)=>s+m.pc,0);
+  const totalCA = md.reduce((s,m)=>s+m.ca,0);
+  const totalPR = md.reduce((s,m)=>s+m.pr,0);
+
+  document.getElementById('monthly-table-body').innerHTML = md.map((m,i)=>{
+    const prev = i>0 ? md[i-1].bc : null;
+    const mom = prev ? ((m.bc-prev)/prev*100).toFixed(1) : null;
+    const momTag = mom===null ? '<span style="color:var(--text3)">—</span>'
+      : parseFloat(mom)>=0 ? `<span class="tag tag-high">+${mom}%</span>`
+      : `<span class="tag tag-neg">${mom}%</span>`;
+    return `<tr>
+      <td class="td-primary">${m.mn}</td>
+      <td class="td-num">${m.bc.toLocaleString('en-IN')}</td>
+      <td class="td-num">₹${m.ba.toLocaleString('en-IN')}</td>
+      <td class="td-num">₹${m.bc > 0 ? Math.round(m.ba/m.bc).toLocaleString('en-IN') : '—'}</td>
+      <td class="td-num">${m.pc}</td>
+      <td class="td-num">₹${m.ca.toLocaleString('en-IN')}</td>
+      <td class="td-num">${m.pr}</td>
+      <td>${momTag}</td>
+    </tr>`;
+  }).join('') + `<tr style="background:var(--paper2);font-weight:700;border-top:2px solid var(--border);">
+    <td style="font-weight:700;color:var(--text)">TOTAL</td>
+    <td class="td-num">${totalBC.toLocaleString('en-IN')}</td>
+    <td class="td-num">₹${totalBA.toLocaleString('en-IN')}</td>
+    <td class="td-num">₹${totalBC > 0 ? Math.round(totalBA/totalBC).toLocaleString('en-IN') : '—'}</td>
+    <td class="td-num">${totalPC}</td>
+    <td class="td-num">₹${totalCA.toLocaleString('en-IN')}</td>
+    <td class="td-num">${totalPR}</td>
+    <td>—</td>
+  </tr>`;
+}
+
+function buildPlaycoinDist(){
+  dc('playcoinDist');
+  const bd=aggDistrict();
+  charts.playcoinDist=new Chart(document.getElementById('playcoinDist').getContext('2d'),{
+    type:'bar', data:{ labels:bd.map(d=>d.district), datasets:[{ label:'Playcoin Used', data:bd.map(d=>d.pc), backgroundColor:bd.map(d=>D_COL[d.district]), borderRadius:3 }]},
+    options:{ indexAxis:'y', responsive:true, plugins:{legend:{display:false}}, scales:{x:{grid:GRID,ticks:{color:'#7a9b7e'}}, y:{grid:{color:'transparent'},ticks:{color:'#4a6b4e'}}}}
+  });
+}
+
+function buildPkgDist(){
+  dc('pkgDist');
+  const bd=aggDistrict();
+  charts.pkgDist=new Chart(document.getElementById('pkgDist').getContext('2d'),{
+    type:'bar', data:{ labels:bd.map(d=>d.district), datasets:[
+      { label:'Welcome Offered', data:bd.map(d=>d.wo), backgroundColor:'rgba(67,168,81,0.12)', borderRadius:2 },
+      { label:'Pkg Offered',    data:bd.map(d=>d.pr), backgroundColor:'#43a851', borderRadius:2 }
+    ]},
+    options:{ responsive:true, plugins:{legend:{labels:{boxWidth:10,padding:14,color:'#4a6b4e'}}}, scales:{x:{grid:{color:'transparent'},ticks:{color:'#7a9b7e'}}, y:{grid:GRID,ticks:{color:'#7a9b7e'}}}}
+  });
+}
+
+function buildPlaycoinMonthly(){
+  dc('playcoinMonthly');
+  const md=aggMonth();
+  charts.playcoinMonthly=new Chart(document.getElementById('playcoinMonthly').getContext('2d'),{
+    type:'line', data:{ labels:md.map(m=>m.mn.slice(0,3)), datasets:[{ label:'Playcoin Bookings', data:md.map(m=>m.pc), borderColor:'#2d6a35', backgroundColor:'rgba(45,106,53,0.10)', fill:true, tension:0.4, pointRadius:4, pointBackgroundColor:'#2d6a35', borderWidth:2 }]},
+    options:{ responsive:true, plugins:{legend:{display:false}}, scales:{x:{grid:GRID,ticks:{color:'#7a9b7e'}}, y:{grid:GRID,ticks:{color:'#7a9b7e'}}}}
+  });
+}
+
+function buildCoinsAmtMonthly(){
+  dc('coinsAmtMonthly');
+  const md=aggMonth();
+  charts.coinsAmtMonthly=new Chart(document.getElementById('coinsAmtMonthly').getContext('2d'),{
+    type:'bar', data:{ labels:md.map(m=>m.mn.slice(0,3)), datasets:[{ label:'Coins Redeemed ₹', data:md.map(m=>m.ca), backgroundColor:'rgba(45,106,53,0.65)', borderRadius:3 }]},
+    options:{ responsive:true, plugins:{legend:{display:false}}, scales:{x:{grid:{color:'transparent'},ticks:{color:'#7a9b7e'}}, y:{grid:GRID,ticks:{color:'#7a9b7e',callback:v=>`₹${v}`}}}}
+  });
+}
+
+function buildIncentiveTable(){
+  const bd=aggDistrict();
+  document.getElementById('incentive-table-body').innerHTML = bd.map(d=>{
+    const pcRate=(d.bc>0?(d.pc/d.bc*100):0).toFixed(1);
+    const conv=d.wo>0?(d.pr/d.wo*100).toFixed(0):'—';
+    const pcTag=parseFloat(pcRate)>=10?'tag-high':parseFloat(pcRate)>=4?'tag-med':parseFloat(pcRate)>0?'tag-low':'tag-zero';
+    const cTag=conv==='—'?'tag-zero':parseInt(conv)>=100?'tag-high':parseInt(conv)>=50?'tag-med':'tag-low';
+    return `<tr>
+      <td><span style="display:inline-flex;align-items:center;gap:6px;"><span style="width:10px;height:10px;border-radius:50%;background:${D_COL[d.district]};display:inline-block;"></span>${d.district}</span></td>
+      <td class="td-num">${d.bc.toLocaleString('en-IN')}</td>
+      <td class="td-num">${d.pc}</td>
+      <td><span class="tag ${pcTag}">${pcRate}%</span></td>
+      <td class="td-num">₹${d.ca.toLocaleString('en-IN')}</td>
+      <td class="td-num">${d.wo}</td>
+      <td class="td-num">${d.pr}</td>
+      <td><span class="tag ${cTag}">${conv}${conv!=='—'?'%':''}</span></td>
+      <td class="td-num">₹${d.pra.toLocaleString('en-IN')}</td>
+    </tr>`;
+  }).join('') + (()=>{
+    const tot = bd.reduce((a,d)=>({bc:a.bc+d.bc,pc:a.pc+d.pc,ca:a.ca+d.ca,pr:a.pr+d.pr,pra:a.pra+d.pra,wo:a.wo+d.wo}),{bc:0,pc:0,ca:0,pr:0,pra:0,wo:0});
+    const pcR=(tot.bc>0?(tot.pc/tot.bc*100):0).toFixed(1);
+    const conv=tot.wo>0?(tot.pr/tot.wo*100).toFixed(0):'—';
+    const pcTag=parseFloat(pcR)>=10?'tag-high':parseFloat(pcR)>=4?'tag-med':parseFloat(pcR)>0?'tag-low':'tag-zero';
+    const cTag=conv==='—'?'tag-zero':parseInt(conv)>=100?'tag-high':parseInt(conv)>=50?'tag-med':'tag-low';
+    return `<tr style="background:var(--paper2);font-weight:700;border-top:2px solid var(--border);"><td style="font-weight:700;color:var(--text)">TOTAL</td><td class="td-num">${tot.bc.toLocaleString('en-IN')}</td><td class="td-num">${tot.pc}</td><td><span class="tag ${pcTag}">${pcR}%</span></td><td class="td-num">₹${tot.ca.toLocaleString('en-IN')}</td><td class="td-num">${tot.wo}</td><td class="td-num">${tot.pr}</td><td><span class="tag ${cTag}">${conv}${conv!=='—'?'%':''}</span></td><td class="td-num">₹${tot.pra.toLocaleString('en-IN')}</td></tr>`;
+  })();
+}
+
+// Quarter definitions
+const QUARTERS = {
+  Q1: [1,2,3],
+  Q2: [4,5,6],
+  Q3: [7,8,9],
+  Q4: [10,11,12],
+};
+const Q_COLORS = { Q1:'#2d6a35', Q2:'#43a851', Q3:'#d4860a', Q4:'#c0392b' };
+const Q_LABELS = { Q1:'Jan · Feb · Mar', Q2:'Apr · May · Jun', Q3:'Jul · Aug · Sep', Q4:'Oct · Nov · Dec' };
+
+function getQuarterForMonth(m){ return m<=3?'Q1':m<=6?'Q2':m<=9?'Q3':'Q4'; }
+
+// When quarter dropdown changes → clear month, update pills
+function onQuarterSelectChange(){
+  const q = document.getElementById('filter-quarter').value;
+  document.getElementById('filter-month').value='0';
+  updateQPills(q);
+  renderRawTable();
+}
+
+// When month dropdown changes → derive quarter, update pills
+function onMonthSelectChange(){
+  const m = parseInt(document.getElementById('filter-month').value);
+  if(m===0){
+    document.getElementById('filter-quarter').value='all';
+    updateQPills('all');
+  } else {
+    const q = getQuarterForMonth(m);
+    document.getElementById('filter-quarter').value=q;
+    updateQPills(q);
+  }
+  renderRawTable();
+}
+
+// Pill click → sync both dropdowns
+function setQuarterPill(q){
+  document.getElementById('filter-quarter').value=q;
+  document.getElementById('filter-month').value='0';
+  updateQPills(q);
+  renderRawTable();
+}
+
+function updateQPills(active){
+  ['all','Q1','Q2','Q3','Q4'].forEach(k=>{
+    const el=document.getElementById('qpill-'+k);
+    if(el) el.classList.toggle('active', k===active);
+  });
+}
+
+function renderRawTable(){
+  const yearF   = document.getElementById('filter-year') ? document.getElementById('filter-year').value : '2025';
+  // Only 2025 and 2026 have data
+  if(yearF !== '2025' && yearF !== '2026'){
+    document.getElementById('raw-table-body').innerHTML = `
+      <tr><td colspan="10" style="text-align:center;padding:60px 20px;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;color:var(--text3);margin-bottom:8px;">NO DATA</div>
+        <div style="font-size:13px;color:var(--text3);">No booking records available for ${yearF}. Available data: Jan–Dec 2025 &amp; Jan–Mar 2026.</div>
+      </td></tr>`;
+    document.getElementById('raw-count').textContent = `0 records for ${yearF}`;
+    const strip = document.getElementById('quarter-kpi-strip');
+    if(strip) strip.style.display='none';
+    return;
+  }
+  const activeData = getRAW(yearF);
+  const distF   = document.getElementById('filter-district').value;
+  const quarterF= document.getElementById('filter-quarter').value;
+  const monthF  = parseInt(document.getElementById('filter-month').value);
+  const sortF   = document.getElementById('filter-sort').value;
+
+  let data=[...activeData];
+  if(distF!=='all')   data=data.filter(r=>r.district===distF);
+  if(monthF!==0)      data=data.filter(r=>r.month===monthF);
+  else if(quarterF!=='all') data=data.filter(r=>QUARTERS[quarterF].includes(r.month));
+
+  const sorts={
+    month_asc:   (a,b)=>a.month-b.month||a.district.localeCompare(b.district),
+    month_desc:  (a,b)=>b.month-a.month||a.district.localeCompare(b.district),
+    count_desc:  (a,b)=>b.bc-a.bc,
+    amount_desc: (a,b)=>b.ba-a.ba,
+    district_asc:(a,b)=>a.district.localeCompare(b.district),
+  };
+  data.sort(sorts[sortF]||sorts.month_asc);
+
+  const maxBc=Math.max(...activeData.map(r=>r.bc)), maxBa=Math.max(...activeData.map(r=>r.ba));
+
+  // Quarter badge shown in Month column when a quarter is active
+  const activeQ = (quarterF!=='all'&&monthF===0) ? quarterF : null;
+
+  document.getElementById('raw-table-body').innerHTML = data.map(r=>{
+    const rowQ = getQuarterForMonth(r.month);
+    const qBadge = `<span style="font-size:9px;font-weight:700;padding:1px 5px;border-radius:2px;background:${Q_COLORS[rowQ]}22;color:${Q_COLORS[rowQ]};margin-left:5px;letter-spacing:0.5px;">${rowQ}</span>`;
+    return `<tr>
+    <td class="td-primary">${r.mn}${qBadge}</td>
+    <td><span style="display:inline-flex;align-items:center;gap:6px;font-weight:600;"><span style="width:8px;height:8px;border-radius:50%;background:${D_COL[r.district]};display:inline-block;"></span>${r.district}</span></td>
+    <td><div class="bar-inline"><span class="td-num">${r.bc.toLocaleString('en-IN')}</span><div class="bar-track"><div class="bar-fill" style="width:${(r.bc/maxBc*100).toFixed(0)}%;background:var(--accent)"></div></div></div></td>
+    <td><div class="bar-inline"><span class="td-num">₹${r.ba.toLocaleString('en-IN')}</span><div class="bar-track"><div class="bar-fill" style="width:${(r.ba/maxBa*100).toFixed(0)}%;background:${D_COL[r.district]}"></div></div></div></td>
+    <td class="td-num">₹${Math.round(r.ba/r.bc).toLocaleString('en-IN')}</td>
+    <td class="td-num">${r.pc}</td>
+    <td class="td-num">₹${r.ca}</td>
+    <td class="td-num">${r.wo}</td>
+    <td class="td-num">${r.pr}</td>
+    <td class="td-num">₹${r.pra}</td>
+  </tr>`;
+  }).join('');
+
+  if(data.length>0){
+    const t=data.reduce((s,r)=>({c:s.c+r.bc,a:s.a+r.ba,p:s.p+r.pc,ca:s.ca+r.ca,w:s.w+r.wo,rr:s.rr+r.pr,ra:s.ra+r.pra}),{c:0,a:0,p:0,ca:0,w:0,rr:0,ra:0});
+    const label = activeQ ? `${activeQ} SUBTOTAL` : monthF!==0 ? `${data[0]?.mn||''} SUBTOTAL` : 'SUBTOTAL';
+    document.getElementById('raw-table-body').innerHTML+=`<tr style="background:var(--paper2);font-weight:700;border-top:2px solid var(--border);">
+      <td style="font-weight:700;color:var(--text)">${label}</td><td></td>
+      <td class="td-num">${t.c.toLocaleString('en-IN')}</td>
+      <td class="td-num">₹${t.a.toLocaleString('en-IN')}</td>
+      <td class="td-num">₹${Math.round(t.a/t.c).toLocaleString('en-IN')}</td>
+      <td class="td-num">${t.p}</td><td class="td-num">₹${t.ca}</td>
+      <td class="td-num">${t.w}</td><td class="td-num">${t.rr}</td><td class="td-num">₹${t.ra}</td>
+    </tr>`;
+  }
+
+  // Quarter KPI strip
+  updateQuarterKPIStrip(quarterF, monthF, distF);
+
+  const qLabel = activeQ ? ` · ${activeQ} (${Q_LABELS[activeQ]})` : monthF!==0 ? ` · ${data[0]?.mn||''}` : '';
+  document.getElementById('raw-count').textContent=`Showing ${data.length} of ${activeData.length} records · ${yearF}${qLabel}`;
+}
+
+function updateQuarterKPIStrip(quarterF, monthF, distF){
+  const strip = document.getElementById('quarter-kpi-strip');
+  if(quarterF==='all' && monthF===0){ strip.style.display='none'; return; }
+
+  // Compute per-quarter totals for the active filter context
+  const qToShow = quarterF!=='all' ? [quarterF] : monthF!==0 ? [getQuarterForMonth(monthF)] : ['Q1','Q2','Q3','Q4'];
+
+  let html='';
+  qToShow.forEach(q=>{
+    let rows=activeData.filter(r=>QUARTERS[q].includes(r.month));
+    if(distF!=='all') rows=rows.filter(r=>r.district===distF);
+    if(monthF!==0) rows=rows.filter(r=>r.month===monthF);
+    const bc=rows.reduce((s,r)=>s+r.bc,0);
+    const ba=rows.reduce((s,r)=>s+r.ba,0);
+    const pr=rows.reduce((s,r)=>s+r.pr,0);
+    html+=`<div class="qkpi" style="border-left:3px solid ${Q_COLORS[q]};">
+      <div class="qkpi-val" style="color:${Q_COLORS[q]}">${q}</div>
+      <div style="display:flex;gap:16px;margin-top:4px;">
+        <div><div class="qkpi-val" style="color:var(--text);font-size:15px;">${bc.toLocaleString('en-IN')}</div><div class="qkpi-lbl">Bookings</div></div>
+        <div><div class="qkpi-val" style="color:var(--text);font-size:15px;">₹${(ba/1000).toFixed(1)}K</div><div class="qkpi-lbl">Booking Amount</div></div>
+        <div><div class="qkpi-val" style="color:var(--text);font-size:15px;">${pr}</div><div class="qkpi-lbl">Pkg Offered</div></div>
+      </div>
+    </div>`;
+  });
+  strip.innerHTML=html;
+  strip.style.display='flex';
+  strip.style.gap='12px';
+  strip.style.flexWrap='wrap';
+  strip.style.marginTop='0';
+}
+
+function resetRaw(){
+  if(document.getElementById('filter-year')) document.getElementById('filter-year').value='2026';
+  ACTIVE_YEAR = '2026';
+  ACTIVE_RAW  = RAW_2026;
+  syncHeaderKPIs('2026');
+  document.getElementById('filter-district').value='all';
+  document.getElementById('filter-quarter').value='all';
+  document.getElementById('filter-month').value='0';
+  document.getElementById('filter-sort').value='month_asc';
+  updateQPills('all');
+  renderRawTable();
+}
+
+
+
+// ── Year selector constants ──
+const ALL_YEARS = ['2020','2021','2022','2023','2024','2025','2026'];
+const KPI_2025 = { bookings:'1,154', revenue:'₹23.96L', pkg:'458' };
+const KPI_2026 = { bookings:'498', revenue:'₹8.75L', pkg:'162', note:'Jan–Mar 2026 · Q1 Only' };
+
+function computeKPI(dataset) {
+  const bc  = dataset.reduce((s,r)=>s+r.bc,0);
+  const ba  = dataset.reduce((s,r)=>s+r.ba,0);
+  const pkg = dataset.reduce((s,r)=>s+r.pr,0);
+  return { bookings: bc.toLocaleString('en-IN'), revenue: '₹'+(ba/100000).toFixed(1)+'L', pkg: pkg.toString() };
+}
+
+function syncHeaderKPIs(yr) {
+  const hkpiBookings = document.getElementById('hkpi-bookings');
+  const hkpiRevenue  = document.getElementById('hkpi-revenue');
+  const hkpiPkg      = document.getElementById('hkpi-pkg');
+  const headerSub    = document.getElementById('header-sub-text');
+  if (yr === '2025') {
+    if(hkpiBookings) { hkpiBookings.textContent = KPI_2025.bookings; hkpiBookings.style.opacity = '1'; }
+    if(hkpiRevenue)  { hkpiRevenue.textContent  = KPI_2025.revenue;  hkpiRevenue.style.opacity  = '1'; }
+    if(hkpiPkg)      { hkpiPkg.textContent      = KPI_2025.pkg;      hkpiPkg.style.opacity      = '1'; }
+    if(headerSub)    headerSub.innerHTML = 'Jan – Dec 2025 &nbsp;·&nbsp; 3 Districts &nbsp;·&nbsp; Full Year';
+  } else if (yr === '2026') {
+    const k = computeKPI(RAW_2026);
+    if(hkpiBookings) { hkpiBookings.textContent = k.bookings; hkpiBookings.style.opacity = '1'; }
+    if(hkpiRevenue)  { hkpiRevenue.textContent  = k.revenue;  hkpiRevenue.style.opacity  = '1'; }
+    if(hkpiPkg)      { hkpiPkg.textContent      = k.pkg;      hkpiPkg.style.opacity      = '1'; }
+    if(headerSub)    headerSub.innerHTML = 'Jan – Mar 2026 &nbsp;·&nbsp; 3 Districts &nbsp;·&nbsp; Q1 Current';
+  } else {
+    if(hkpiBookings) { hkpiBookings.textContent = '—'; hkpiBookings.style.opacity = '0.35'; }
+    if(hkpiRevenue)  { hkpiRevenue.textContent  = '—'; hkpiRevenue.style.opacity  = '0.35'; }
+    if(hkpiPkg)      { hkpiPkg.textContent      = '—'; hkpiPkg.style.opacity      = '0.35'; }
+    if(headerSub)    headerSub.innerHTML = yr + ' &nbsp;·&nbsp; No Data Available';
+  }
+}
+
+function rebuildChartsForYear(prefix) {
+  // rebuild all charts on the active page after a year switch
+  const pageMap = { ov:'overview', dist:'district', mn:'monthly', inc:'incentive' };
+  const pageName = pageMap[prefix];
+  if(!pageName) return;
+  // Destroy + rebuild
+  if(pageName==='overview')  { buildTrendChart(); buildDonut(); }
+  if(pageName==='district')  { buildDistMonthlyStack(); buildDistMonthlyRevStack(); }
+  if(pageName==='monthly')   { buildMonthlyCombo(); buildMonthlyPlaycoin(); buildMonthlyPkg(); buildMonthlyTable(); }
+  if(pageName==='incentive') { buildPlaycoinDist(); buildPkgDist(); buildPlaycoinMonthly(); buildCoinsAmtMonthly(); buildIncentiveTable(); }
+}
+
+function setPageYear(prefix, yr) {
+  ALL_YEARS.forEach(y => {
+    const btn = document.getElementById(prefix + '-yr-' + y);
+    if(btn) btn.classList.toggle('active', y === yr);
+  });
+  const label     = document.getElementById(prefix + '-year-label');
+  const noData    = document.getElementById(prefix + '-no-data');
+  const pgContent = document.getElementById(prefix + '-content');
+  const ndYear    = document.getElementById(prefix + '-no-data-year');
+  const ndYr2     = document.getElementById(prefix + '-no-data-yr2');
+
+  const hasData = (yr === '2025' || yr === '2026');
+  ACTIVE_YEAR = yr;
+  ACTIVE_RAW  = getRAW(yr);
+
+  if (hasData) {
+    if(pgContent) pgContent.style.display = 'block';
+    if(noData)    noData.style.display    = 'none';
+    const tag = yr === '2026' ? '2026 · CURRENT DATA' : '';
+    if(label) { label.textContent = tag; label.style.color = 'var(--accent)'; }
+    rebuildChartsForYear(prefix);
+    // Update monthly chart subtitle for 2026
+    ['mn-chart-sub','mn-active-label'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(!el) return;
+      if(id==='mn-chart-sub') el.textContent = yr==='2026' ? 'Jan–Mar 2026 · All Districts Combined · Hover for details' : 'Jan–Dec 2025 · All Districts Combined · Hover for details';
+      if(id==='mn-active-label') el.textContent = 'ALL DISTRICTS · ' + yr;
+    });
+    // Update Quarterly Performance section for overview
+    if(prefix==='ov') updateOverviewQuarters(yr);
+    // Update district content for 2026
+    if(prefix==='dist') updateDistrictCards(yr);
+    // Update incentive KPIs for 2026
+    if(prefix==='inc') updateIncentiveKPIs(yr);
+  } else {
+    if(pgContent) pgContent.style.display = 'none';
+    if(noData)    noData.style.display    = 'block';
+    if(ndYear)    ndYear.textContent      = yr;
+    if(ndYr2)     ndYr2.textContent       = yr;
+    if(label)     { label.textContent = yr + ' · NO DATA'; label.style.color = 'var(--text3)'; }
+    // Update no-data messages
+    const msgs = document.querySelectorAll(`#${prefix}-no-data [style*="max-width:380px"]`);
+    msgs.forEach(el => {
+      el.innerHTML = `No booking records found for <strong>${yr}</strong>.<br>Available data: <strong>Jan – Dec 2025</strong> &amp; <strong>Jan – Mar 2026</strong>.<br>Select <strong>2025</strong> or <strong>2026</strong> to view.`;
+    });
+  }
+  syncHeaderKPIs(yr);
+}
+
+function updateOverviewQuarters(yr) {
+  // Re-compute Q totals from ACTIVE_RAW
+  const raw = ACTIVE_RAW;
+  const qs = { Q1:[1,2,3], Q2:[4,5,6], Q3:[7,8,9], Q4:[10,11,12] };
+  const qColors = { Q1:'#2d6a35', Q2:'#43a851', Q3:'#d4860a', Q4:'#c0392b' };
+  const qNames  = { Q1:'Q1', Q2:'Q2', Q3:'Q3', Q4:'Q4' };
+  const yearTotal = raw.reduce((s,r)=>s+r.bc,0);
+  const cards = document.querySelectorAll('#page-overview .ov-qcard');
+  ['Q1','Q2','Q3','Q4'].forEach((q,i)=>{
+    const card = cards[i];
+    if(!card) return;
+    const qRows = raw.filter(r=>qs[q].includes(r.month));
+    const bc  = qRows.reduce((s,r)=>s+r.bc,0);
+    const ba  = qRows.reduce((s,r)=>s+r.ba,0);
+    const pc  = qRows.reduce((s,r)=>s+r.pc,0);
+    const pr  = qRows.reduce((s,r)=>s+r.pr,0);
+    const pct = yearTotal > 0 ? (bc/yearTotal*100).toFixed(1) : '0.0';
+    const metrics = card.querySelectorAll('.ov-qm-val');
+    if(metrics[0]) metrics[0].textContent = bc.toLocaleString('en-IN');
+    if(metrics[1]) metrics[1].textContent = '₹'+(ba/100000).toFixed(2)+'L';
+    if(metrics[2]) metrics[2].textContent = pc;
+    if(metrics[3]) metrics[3].textContent = pr;
+    const fill = card.querySelector('.ov-qbar-fill');
+    if(fill) fill.style.width = pct + '%';
+    const share = card.querySelector('.ov-qshare');
+    const isBest = bc === Math.max(...['Q1','Q2','Q3','Q4'].map(qq=>raw.filter(r=>qs[qq].includes(r.month)).reduce((s,r)=>s+r.bc,0)));
+    if(share) share.textContent = pct + '% of year' + (isBest && bc>0 ? ' ★ Best':'');
+    // ongoing badge
+    const badge = card.querySelector('.ov-q-live-badge');
+    if(badge){
+      const currentRealYear = String(new Date().getFullYear());
+      const currentRealQ = getCurrentQ();
+      const show = String(yr) === currentRealYear && q === currentRealQ;
+      badge.style.display = show ? 'inline-flex' : 'none';
+    }
+  });
+
+  // Overview KPI tiles
+  const totalBC  = raw.reduce((s,r)=>s+r.bc,0);
+  const totalBA  = raw.reduce((s,r)=>s+r.ba,0);
+  const totalPkg = raw.reduce((s,r)=>s+r.pr,0);
+  const totalPRA_ov = raw.reduce((s,r)=>s+r.pra,0);
+  const totalWO_ov = raw.reduce((s,r)=>s+r.wo,0);
+  const totalPC  = raw.reduce((s,r)=>s+r.pc,0);
+  const totalCA  = raw.reduce((s,r)=>s+r.ca,0);
+  const imphalBC = raw.filter(r=>r.district==='Bhubaneswar').reduce((s,r)=>s+r.bc,0);
+  const imphalBA = raw.filter(r=>r.district==='Bhubaneswar').reduce((s,r)=>s+r.ba,0);
+  const imphalPct= totalBC>0?(imphalBC/totalBC*100).toFixed(1):0;
+  const churaBC  = raw.filter(r=>r.district==='Cuttack').reduce((s,r)=>s+r.bc,0);
+  const churaBA  = raw.filter(r=>r.district==='Cuttack').reduce((s,r)=>s+r.ba,0);
+  const thouBC   = raw.filter(r=>r.district==='Puri').reduce((s,r)=>s+r.bc,0);
+  const thouBA   = raw.filter(r=>r.district==='Puri').reduce((s,r)=>s+r.ba,0);
+  const suffix   = yr==='2026' ? '3 districts · Jan–Mar 2026' : '3 districts · Jan–Dec 2025';
+  const avgBk    = totalBC>0?Math.round(totalBA/totalBC):0;
+  // Update the 6 KPI tiles
+  const tiles = document.querySelectorAll('#ov-content .ov-kpi .ov-kpi-value');
+  const subs  = document.querySelectorAll('#ov-content .ov-kpi .ov-kpi-sub');
+  if(tiles[0]) tiles[0].textContent = totalBC.toLocaleString('en-IN');
+  if(subs[0])  subs[0].textContent  = suffix;
+  if(tiles[1]) tiles[1].textContent = '₹'+(totalBA/100000).toFixed(1)+'L';
+  if(subs[1])  subs[1].textContent  = '₹'+totalBA.toLocaleString('en-IN')+' cumulative';
+  if(tiles[2]) tiles[2].textContent = totalPkg;
+  if(subs[2])  subs[2].textContent  = '₹'+totalPRA_ov.toLocaleString('en-IN')+' total pkg offered';
+  if(tiles[3]) tiles[3].textContent = totalPC;
+  if(subs[3])  subs[3].textContent  = '₹'+totalCA.toLocaleString('en-IN')+' coins redeemed';
+  if(tiles[4]) tiles[4].textContent = '₹'+avgBk.toLocaleString('en-IN');
+  // District breakdown strip
+  const distBars = document.querySelectorAll('#ov-content .ov-ds-row');
+  const distData = [{bc:imphalBC,ba:imphalBA},{bc:churaBC,ba:churaBA},{bc:thouBC,ba:thouBA}];
+  distBars.forEach((row,i)=>{
+    const pct = totalBC>0?(distData[i].bc/totalBC*100).toFixed(1):0;
+    const fill = row.querySelector('.ov-ds-bar');
+    if(fill) fill.style.width = pct+'%';
+    const vals = row.querySelectorAll('.ov-ds-vals span');
+    if(vals[0]) vals[0].textContent = distData[i].bc.toLocaleString('en-IN');
+    if(vals[1]) vals[1].textContent = '₹'+(distData[i].ba/100000).toFixed(1)+'L';
+    if(vals[2]) vals[2].textContent = pct+'%';
+  });
+  updateInsights(yr);
+}
+
+function updateInsights(yr) {
+  const raw = ACTIVE_RAW;
+  const totalBC  = raw.reduce((s,r)=>s+r.bc,0);
+  const totalBA  = raw.reduce((s,r)=>s+r.ba,0);
+  const totalPC  = raw.reduce((s,r)=>s+r.pc,0);
+  const totalPR  = raw.reduce((s,r)=>s+r.pr,0);
+  const totalWO  = raw.reduce((s,r)=>s+r.wo,0);
+  const totalCA  = raw.reduce((s,r)=>s+r.ca,0);
+
+  const dStats = {};
+  ['Bhubaneswar','Cuttack','Puri'].forEach(d => {
+    const rows = raw.filter(r=>r.district===d);
+    dStats[d] = {
+      bc:  rows.reduce((s,r)=>s+r.bc,0),
+      ba:  rows.reduce((s,r)=>s+r.ba,0),
+      pc:  rows.reduce((s,r)=>s+r.pc,0),
+      pr:  rows.reduce((s,r)=>s+r.pr,0),
+      wo:  rows.reduce((s,r)=>s+r.wo,0),
+    };
+    dStats[d].avg = dStats[d].bc>0 ? Math.round(dStats[d].ba/dStats[d].bc) : 0;
+    dStats[d].pct = totalBC>0 ? (dStats[d].bc/totalBC*100).toFixed(1) : '0.0';
+    dStats[d].revPct = totalBA>0 ? (dStats[d].ba/totalBA*100).toFixed(1) : '0.0';
+  });
+
+  const avgTicket   = totalBC>0 ? Math.round(totalBA/totalBC) : 0;
+  const pcRate      = totalBC>0 ? (totalPC/totalBC*100).toFixed(1) : '0.0';
+  const convRate    = totalWO>0 ? Math.round(totalPR/totalWO*100) : 0;
+  const otherBC     = totalBC - dStats['Bhubaneswar'].bc;
+
+  // Monthly data for best/worst month
+  const monthlyBC = MONTHS.map((_,i)=>raw.filter(r=>r.month===i+1).reduce((s,r)=>s+r.bc,0));
+  const maxBC = Math.max(...monthlyBC);
+  const minBC = Math.min(...monthlyBC.filter(v=>v>0));
+  const bestMonthName  = MONTHS[monthlyBC.indexOf(maxBC)];
+  const worstMonthName = MONTHS[monthlyBC.indexOf(minBC)];
+
+  // Quarterly growth (Q1 only for 2026)
+  const qs = {Q1:[1,2,3],Q2:[4,5,6],Q3:[7,8,9],Q4:[10,11,12]};
+  const qBC = {};
+  Object.keys(qs).forEach(q => { qBC[q] = raw.filter(r=>qs[q].includes(r.month)).reduce((s,r)=>s+r.bc,0); });
+
+  let insights;
+  if (yr === '2026') {
+    // Compute MoM change Jan→Mar
+    const janBC = raw.filter(r=>r.month===1).reduce((s,r)=>s+r.bc,0);
+    const febBC = raw.filter(r=>r.month===2).reduce((s,r)=>s+r.bc,0);
+    const marBC = raw.filter(r=>r.month===3).reduce((s,r)=>s+r.bc,0);
+    const janToMar = janBC>0 ? (((marBC-janBC)/janBC)*100).toFixed(1) : '—';
+    const imphalShareBA = dStats['Bhubaneswar'].revPct;
+    const churaAvg = dStats['Cuttack'].avg;
+    const thouAvg  = dStats['Puri'].avg;
+    const imphalAvg = dStats['Bhubaneswar'].avg;
+    const highestTicketDist = Object.keys(dStats).sort((a,b)=>dStats[b].avg-dStats[a].avg)[0];
+    const highestTicket = dStats[highestTicketDist].avg;
+    insights = [
+      { cls:'ov-ins-red',   num:'01', val: dStats['Bhubaneswar'].pct+'%',  title:'Bhubaneswar Leads',
+        body: `${dStats['Bhubaneswar'].bc.toLocaleString('en-IN')} of ${totalBC.toLocaleString('en-IN')} Q1 bookings and ${imphalShareBA}% of revenue from Bhubaneswar. Cuttack contributes ${dStats['Cuttack'].bc} bookings (${dStats['Cuttack'].pct}%) — a strong #2.` },
+      { cls:'ov-ins-amber', num:'02', val: parseFloat(janToMar)>=0?'+'+janToMar+'%':janToMar+'%', title:'Q1 2026 Trend',
+        body: `Q1 2026: ${janBC} in Jan, ${febBC} in Feb, ${marBC} in Mar. March is the strongest month (${marBC} bookings). Multi-district presence with Cuttack contributing strongly at ${dStats['Cuttack'].bc} bookings.` },
+      { cls:'ov-ins-blue',  num:'03', val: convRate+'%',              title:'Pkg Conversion',
+        body: `${totalPR} packages offered vs ${totalWO} welcome offered — a ${convRate}% conversion rate. Bhubaneswar leads with ${dStats['Bhubaneswar'].pr} pkg from ${dStats['Bhubaneswar'].wo} welcome offered. Cuttack: ${dStats['Cuttack'].pr} pkg.` },
+      { cls:'ov-ins-green', num:'04', val: '₹'+highestTicket.toLocaleString('en-IN'), title: highestTicketDist+' Highest Avg',
+        body: `${highestTicketDist} earns ₹${highestTicket.toLocaleString('en-IN')} per booking — highest in the state — vs Bhubaneswar ₹${imphalAvg.toLocaleString('en-IN')} and Puri ₹${thouAvg.toLocaleString('en-IN')}.` },
+      { cls:'ov-ins-red',   num:'05', val: pcRate+'%',                title:'Playcoin Penetration',
+        body: `${totalPC} of ${totalBC.toLocaleString('en-IN')} Q1 bookings used playcoins (${pcRate}%). Bhubaneswar leads with ${dStats['Bhubaneswar'].pc} playcoin bookings. Cuttack: ${dStats['Cuttack'].pc}. Coins redeemed: ₹${totalCA.toLocaleString('en-IN')}.` },
+      { cls:'ov-ins-amber', num:'06', val: '₹'+thouAvg.toLocaleString('en-IN'), title:'Puri Emerging',
+        body: `Puri averages ₹${thouAvg.toLocaleString('en-IN')} per booking. With ${dStats['Puri'].bc} Q1 bookings, Puri is still in early stages — targeted promotions and venue onboarding could significantly lift volume.` },
+    ];
+  } else {
+    // 2025 — restore original static insights
+    insights = [
+      { cls:'ov-ins-red',   num:'01', val:'79.0%',   title:'Bhubaneswar Dominates',
+        body:'928 of 1,154 bookings and 89.5% of all revenue comes from Bhubaneswar. The remaining 2 districts combined contribute just 226 bookings.' },
+      { cls:'ov-ins-amber', num:'02', val:'+102%',   title:'Q4 vs Q1 Growth',
+        body:'Q4 (Oct–Dec) delivered 482 bookings vs Q1\'s 212 — a 127% surge. October alone (168) was the highest single month, driven by multi-district expansion as Cuttack came online in Q4.' },
+      { cls:'ov-ins-blue',  num:'03', val:'108%',    title:'Pkg Over-Redemption',
+        body:'458 packages offered vs 422 welcome offered — a 108% conversion rate. Cuttack: 127 pkg from 114 welcome, suggesting strong carry-forward redemptions. Bhubaneswar: 329 from 306.' },
+      { cls:'ov-ins-green', num:'04', val:'₹1,738',  title:'Highest Avg Ticket',
+        body:'Bhubaneswar earns ₹2,310 per booking — highest in the state — vs Cuttack ₹1,119 and Puri ₹900. Premium facility mix and longer session durations drive higher per-booking value.' },
+      { cls:'ov-ins-red',   num:'05', val:'22.8%',   title:'Playcoin Penetration',
+        body:'263 of 1,154 bookings used playcoins (22.8%) — a high penetration rate. Bhubaneswar leads with 222 playcoin bookings (23.9% of its volume). Cuttack: 40 (17.9%).' },
+      { cls:'ov-ins-amber', num:'06', val:'₹1,060',  title:'Puri Emerging',
+        body:'Puri had only 3 bookings in 2025. With ₹900 avg ticket and tourism proximity, targeted promotions and venue onboarding could unlock significant booking growth.' },
+    ];
+  }
+
+  const row = document.querySelector('#ov-content .ov-insight-row');
+  if (!row) return;
+  row.innerHTML = insights.map(ins => `
+    <div class="ov-ins ${ins.cls}">
+      <div class="ov-ins-num">${ins.num}</div>
+      <div class="ov-ins-val">${ins.val}</div>
+      <div class="ov-ins-title">${ins.title}</div>
+      <div class="ov-ins-body">${ins.body}</div>
+    </div>`).join('');
+
+  // Re-evaluate ongoing quarter badge whenever overview is rebuilt
+  if(typeof markOngoingQuarter === 'function') markOngoingQuarter(yr);
+}
+
+function updateDistrictCards(yr) {
+  const raw = ACTIVE_RAW;
+  ['Bhubaneswar','Cuttack','Puri'].forEach(d => {
+    const rows = raw.filter(r=>r.district===d);
+    const bc  = rows.reduce((s,r)=>s+r.bc,0);
+    const ba  = rows.reduce((s,r)=>s+r.ba,0);
+    const pc  = rows.reduce((s,r)=>s+r.pc,0);
+    const ca  = rows.reduce((s,r)=>s+r.ca,0);
+    const wo  = rows.reduce((s,r)=>s+r.wo,0);
+    const pr  = rows.reduce((s,r)=>s+r.pr,0);
+    const pra = rows.reduce((s,r)=>s+r.pra,0);
+    const totalBC = raw.reduce((s,r)=>s+r.bc,0);
+    const pct  = totalBC>0?(bc/totalBC*100).toFixed(1):0;
+    const conv = wo>0?Math.round(pr/wo*100)+'%':'—';
+    // Find the card for this district
+    const cardClass = { Bhubaneswar:'d-imphal', Cuttack:'d-chura', Puri:'d-thoubal' }[d];
+    const card = document.querySelector('.' + cardClass);
+    if(!card) return;
+    const vals = card.querySelectorAll('.d-stat-val');
+    if(vals[0]) vals[0].textContent = bc.toLocaleString('en-IN');
+    if(vals[1]) vals[1].textContent = '₹'+ba.toLocaleString('en-IN');
+    if(vals[2]) vals[2].textContent = bc>0 ? '₹'+Math.round(ba/bc).toLocaleString('en-IN') : '—';
+    if(vals[3]) vals[3].textContent = pc+' bookings';
+    if(vals[4]) vals[4].textContent = '₹'+ca.toLocaleString('en-IN');
+    if(vals[5]) vals[5].textContent = wo;
+    if(vals[6]) vals[6].textContent = pr+' ('+conv+')';
+    if(vals[7]) vals[7].textContent = '₹'+pra.toLocaleString('en-IN');
+    const fill = card.querySelector('.d-share-fill');
+    if(fill) fill.style.width = pct+'%';
+  });
+}
+
+function updateIncentiveKPIs(yr) {
+  const raw = ACTIVE_RAW;
+  const totalBC = raw.reduce((s,r)=>s+r.bc,0);
+  const totalPC = raw.reduce((s,r)=>s+r.pc,0);
+  const totalCA = raw.reduce((s,r)=>s+r.ca,0);
+  const totalPR = raw.reduce((s,r)=>s+r.pr,0);
+  const totalPRA= raw.reduce((s,r)=>s+r.pra,0);
+  const totalWO = raw.reduce((s,r)=>s+r.wo,0);
+  const pcRate  = totalBC>0?(totalPC/totalBC*100).toFixed(1):0;
+  const conv    = totalWO>0?Math.round(totalPR/totalWO*100):0;
+  const kpis = document.querySelectorAll('#inc-content .kpi-value');
+  const subs  = document.querySelectorAll('#inc-content .kpi-sub');
+  if(kpis[0]) kpis[0].textContent = totalPC;
+  if(subs[0])  subs[0].textContent  = pcRate+'% of total bookings';
+  if(kpis[1]) kpis[1].textContent = '₹'+totalCA.toLocaleString('en-IN');
+  if(kpis[2]) kpis[2].textContent = totalPR;
+  if(subs[2])  subs[2].textContent  = 'vs '+totalWO+' welcome offered → '+conv+'%';
+  if(kpis[3]) kpis[3].textContent = '₹'+totalPRA.toLocaleString('en-IN');
+}
+
+function getCurrentQ() {
+  const m = new Date().getMonth() + 1;
+  return m<=3?'Q1':m<=6?'Q2':m<=9?'Q3':'Q4';
+}
+
+function setOverviewYear(yr) {
+  setPageYear('ov', yr);
+  if(yr === '2025' || yr === '2026') {
+    buildTrendChart();
+    buildDonut();
+  }
+}
+
+function onYearChange() {
+  const yr = document.getElementById('filter-year').value;
+  ACTIVE_YEAR = yr;
+  ACTIVE_RAW  = getRAW(yr);
+  syncHeaderKPIs(yr);
+  renderRawTable();
+}
+
+const PAGE_BUILDERS = {
+  overview: ()=>{ buildTrendChart(); buildDonut(); },
+  district: ()=>{ buildDistMonthlyStack(); buildDistMonthlyRevStack(); },
+  monthly:  ()=>{ activeMonthlyDistrict='all'; buildMonthlyCombo(); buildMonthlyPlaycoin(); buildMonthlyPkg(); buildMonthlyTable(); },
+  incentive:()=>{ buildPlaycoinDist(); buildPkgDist(); buildPlaycoinMonthly(); buildCoinsAmtMonthly(); buildIncentiveTable(); },
+  rawdata:  ()=>{ renderRawTable(); }
+};
+const inited={};
+
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  ['overview','district','monthly','incentive','rawdata'].forEach((n,i)=>{
+    if(n===name) document.querySelectorAll('.nav-tab')[i].classList.add('active');
+  });
+  if(!inited[name]){ PAGE_BUILDERS[name](); inited[name]=true; }
+  // Sync header KPIs to active year of this page
+  const prefixMap = {overview:'ov',district:'dist',monthly:'mn',incentive:'inc'};
+  const prefix = prefixMap[name];
+  if(prefix){
+    const activeYrBtn = document.querySelector('.ov-year-btn.active[id^="'+prefix+'-yr-"]');
+    const yr = activeYrBtn ? activeYrBtn.id.replace(prefix+'-yr-','') : '2025';
+    ACTIVE_YEAR = yr;
+    ACTIVE_RAW  = getRAW(yr);
+    syncHeaderKPIs(yr);
+  } else if(name==='rawdata'){
+    const yr = document.getElementById('filter-year')?.value || '2025';
+    ACTIVE_YEAR = yr;
+    ACTIVE_RAW  = getRAW(yr);
+    syncHeaderKPIs(yr);
+  }
+}
+
+setPageYear('ov','2026'); PAGE_BUILDERS['overview'](); inited['overview']=true;
+
+// ── Ongoing Quarter Indicator (Overview only) ──
+function markOngoingQuarter(selectedYear) {
+  // Remove any existing ongoing styling/badges
+  document.querySelectorAll('#page-overview .ov-qcard--ongoing').forEach(c => {
+    c.classList.remove('ov-qcard--ongoing');
+    c.style.removeProperty('--ongoing-color');
+  });
+  document.querySelectorAll('#page-overview .ov-q-live-badge').forEach(b => b.remove());
+
+  // Only show badge when viewing the current real year
+  const today = new Date();
+  const currentRealYear = String(today.getFullYear());
+  if (String(selectedYear) !== currentRealYear) return;
+
+  const month  = today.getMonth() + 1;        // 1–12
+  const qIndex = Math.ceil(month / 3);         // 1–4
+  const qColors = { 1:'#2d6a35', 2:'#43a851', 3:'#d4860a', 4:'#c0392b' };
+  const color = qColors[qIndex];
+
+  const qCards = document.querySelectorAll('#page-overview .ov-qcard');
+  const card = qCards[qIndex - 1];
+  if (!card) return;
+
+  card.classList.add('ov-qcard--ongoing');
+  card.style.setProperty('--ongoing-color', color);
+
+  const badge = document.createElement('div');
+  badge.className = 'ov-q-live-badge';
+  badge.innerHTML = '<span class="ov-q-live-dot"></span>Ongoing Quarter';
+  badge.style.background = color;
+
+  const head = card.querySelector('.ov-qcard-head');
+  if (head) head.insertAdjacentElement('afterend', badge);
+}
+
+// Run on initial load with the default active year
+(function(){
+  const activeBtn = document.querySelector('#page-overview .ov-year-btn.active');
+  markOngoingQuarter(activeBtn ? activeBtn.textContent.trim() : new Date().getFullYear());
+})();
+
+// Patch setOverviewYear to re-evaluate badge on every year switch
+(function(){
+  const _orig = window.setOverviewYear;
+  window.setOverviewYear = function(yr) {
+    if (typeof _orig === 'function') _orig(yr);
+    markOngoingQuarter(yr);
+  };
+})();
+</script>
+</body>
+</html>
